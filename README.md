@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Anitha Roselin S — Luxury Interior Designer & 3D Visualizer Portfolio
 
 A modern, high-end, fully responsive Interior Designer Portfolio website built with **React.js**, **Vite**, and **Lucide Icons**, inspired by luxury architecture and interior design studios.
@@ -128,3 +129,6 @@ anitaPortfolio/
         ├── Footer.jsx           # Studio footer and navigation
         └── FloatingActions.jsx  # Floating WhatsApp & Back-to-top buttons
 ```
+=======
+# anitaPortfolio
+>>>>>>> cb1a1e44bd5045fb30cf717262954dbb9c67e2f0
