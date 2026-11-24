@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" width="100%" height="100%" style="background:#FAF8F5;">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#EAE2D7" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8C6636"/>
+    </marker>
+  </defs>
+
+  <!-- Background Grid -->
+  <rect width="1000" height="750" fill="url(#grid)" />
+  
+  <!-- Outer Title Border -->
+  <rect x="25" y="25" width="950" height="700" fill="none" stroke="#2C241E" stroke-width="2"/>
+  <rect x="30" y="30" width="940" height="690" fill="none" stroke="#C5A880" stroke-width="0.8"/>
+
+  <!-- Title Block Header -->
+  <rect x="680" y="35" width="280" height="42" fill="#2C241E"/>
+  <text x="820" y="62" fill="#FAF6F0" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" letter-spacing="2">PROJECT 1: CAD 2D PLAN</text>
+
+  <!-- Title Badge -->
+  <text x="50" y="65" fill="#8C6636" font-family="'Cormorant Garamond', Georgia, serif" font-size="24" font-weight="bold" letter-spacing="1">MODULAR KITCHEN 2D PLANNING &amp; WORKING DRAWING</text>
+  <text x="50" y="85" fill="#64564C" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" letter-spacing="0.5">Scale 1:20 • L-Shape 2285mm × 2675mm • Cookscape Chennai Execution • Designer: Anitha Roselin S</text>
+
+  <!-- Main Walls (L-Shape) -->
+  <!-- Top Horizontal Wall -->
+  <rect x="80" y="120" width="560" height="30" fill="#E4DDD3" stroke="#2C241E" stroke-width="2"/>
+  <!-- Right Vertical Wall -->
+  <rect x="580" y="120" width="30" height="520" fill="#E4DDD3" stroke="#2C241E" stroke-width="2"/>
+  <!-- Left Window & Door Wall -->
+  <rect x="80" y="150" width="20" height="490" fill="#E4DDD3" stroke="#2C241E" stroke-width="2"/>
+
+  <!-- Window Demarcation (915mm) -->
+  <rect x="76" y="220" width="28" height="130" fill="#FFFFFF" stroke="#8C6636" stroke-width="1.5"/>
+  <line x1="90" y1="220" x2="90" y2="350" stroke="#8C6636" stroke-width="1.5"/>
+  <text x="65" y="290" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="bold" transform="rotate(-90 65 290)" text-anchor="middle">WINDOW (915)</text>
+
+  <!-- Door Demarcation (815mm) -->
+  <rect x="76" y="440" width="28" height="140" fill="#FFFFFF" stroke="#2C241E" stroke-width="1.5"/>
+  <path d="M 80 440 A 130 130 0 0 1 190 560" fill="none" stroke="#8C6636" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="65" y="515" fill="#2C241E" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="bold" transform="rotate(-90 65 515)" text-anchor="middle">DOOR (815)</text>
+
+  <!-- KITCHEN COUNTERTOP RUNS -->
+  <!-- Run A: Sink Run (Top Wall: Width 550 depth, Length ~500) -->
+  <rect x="100" y="150" width="130" height="150" fill="#FAF7F2" stroke="#2C241E" stroke-width="1.5"/>
+  <text x="165" y="200" fill="#2C241E" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="600" text-anchor="middle">FM 450</text>
+  <text x="165" y="218" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" text-anchor="middle">Base Shutter</text>
+
+  <!-- SINK 670 Unit -->
+  <rect x="230" y="150" width="180" height="150" fill="#FAF7F2" stroke="#2C241E" stroke-width="1.5"/>
+  <!-- Sink Bowl & Drainer -->
+  <rect x="250" y="165" width="140" height="110" rx="10" fill="#EAE2D7" stroke="#2C241E" stroke-width="1.2"/>
+  <circle cx="320" cy="220" r="10" fill="#FAF7F2" stroke="#2C241E" stroke-width="1.2"/>
+  <circle cx="320" cy="220" r="4" fill="#2C241E"/>
+  <text x="320" y="195" fill="#2C241E" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="bold" text-anchor="middle">SINK 670 (O/S 650)</text>
+  <text x="320" y="248" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" text-anchor="middle">CNC Vent Skirting</text>
+
+  <!-- Corner Unit FBCM-RT -->
+  <path d="M 410 150 L 580 150 L 580 370 L 440 370 L 440 300 L 410 300 Z" fill="#F4EFEA" stroke="#2C241E" stroke-width="1.5"/>
+  <text x="500" y="230" fill="#2C241E" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold" text-anchor="middle">FBCM-RT</text>
+  <text x="500" y="250" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" text-anchor="middle">Corner Magic Carcass</text>
+  <text x="500" y="265" fill="#64564C" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" text-anchor="middle">1130mm × 980mm</text>
+
+  <!-- Run B: Cooking & Storage (Right Wall: Depth 550mm) -->
+  <!-- Oil Pull-Out (Tandem) FM 285 -->
+  <rect x="440" y="370" width="140" height="55" fill="#FAF7F2" stroke="#2C241E" stroke-width="1.5"/>
+  <text x="510" y="402" fill="#2C241E" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="bold" text-anchor="middle">OIL PULL OUT (285)</text>
+
+  <!-- Cooktop / Hob Unit FM 750 (Gas 750 O/S) -->
+  <rect x="440" y="425" width="140" height="120" fill="#FAF7F2" stroke="#2C241E" stroke-width="1.5"/>
+  <!-- 3 Burner Hob -->
+  <rect x="460" y="445" width="100" height="80" rx="6" fill="#2C241E" stroke="#8C6636" stroke-width="1.2"/>
+  <circle cx="485" cy="470" r="12" fill="#3A322C" stroke="#C5A880" stroke-width="1"/>
+  <circle cx="535" cy="470" r="12" fill="#3A322C" stroke="#C5A880" stroke-width="1"/>
+  <circle cx="510" cy="505" r="14" fill="#3A322C" stroke="#C5A880" stroke-width="1"/>
+  <text x="510" y="438" fill="#FAF6F0" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" text-anchor="middle">HOB 750 (2 Cylinders)</text>
+
+  <!-- 3-Drawer Unit FMd3-60 (600mm) -->
+  <rect x="440" y="545" width="140" height="95" fill="#FAF7F2" stroke="#2C241E" stroke-width="1.5"/>
+  <line x1="440" y1="575" x2="580" y2="575" stroke="#C5A880" stroke-width="1"/>
+  <line x1="440" y1="605" x2="580" y2="605" stroke="#C5A880" stroke-width="1"/>
+  <text x="510" y="565" fill="#2C241E" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="bold" text-anchor="middle">FMd3-60 DRAWERS</text>
+  <text x="510" y="592" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" text-anchor="middle">1. PVC Cutlery (165mm)</text>
+  <text x="510" y="622" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" text-anchor="middle">2. Wooden + Tandem (350mm)</text>
+
+  <!-- OVERHEAD WALL UNITS (Dashed Red/Gold Lines) -->
+  <!-- WM 430, WM 600, WM 600, WBCM Open -->
+  <rect x="100" y="150" width="105" height="75" fill="none" stroke="#8C6636" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <text x="152" y="172" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" text-anchor="middle">WM 430</text>
+
+  <rect x="205" y="150" width="145" height="75" fill="none" stroke="#8C6636" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <text x="277" y="172" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" text-anchor="middle">WM 600</text>
+
+  <rect x="350" y="150" width="145" height="75" fill="none" stroke="#8C6636" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <text x="422" y="172" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" text-anchor="middle">WM 600</text>
+
+  <rect x="495" y="150" width="85" height="75" fill="none" stroke="#8C6636" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <text x="537" y="172" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="bold" text-anchor="middle">WBCM OPEN</text>
+
+  <!-- Right Wall Overhead Units: WM 700 Glass, Chimney 2', WM 700 Glass -->
+  <rect x="505" y="225" width="75" height="120" fill="none" stroke="#8C6636" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <text x="542" y="285" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" text-anchor="middle">WM 700 (gl)</text>
+
+  <!-- Chimney 2' -->
+  <rect x="500" y="345" width="80" height="95" fill="none" stroke="#2C241E" stroke-width="1.5"/>
+  <line x1="500" y1="345" x2="580" y2="440" stroke="#2C241E" stroke-width="0.8"/>
+  <line x1="580" y1="345" x2="500" y2="440" stroke="#2C241E" stroke-width="0.8"/>
+  <text x="540" y="395" fill="#2C241E" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" text-anchor="middle">CHIMNEY 2'</text>
+
+  <rect x="505" y="440" width="75" height="120" fill="none" stroke="#8C6636" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <text x="542" y="500" fill="#8C6636" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" text-anchor="middle">WM 700 (gl)</text>
+
+  <!-- SPECIFICATION TABLE ON RIGHT (Page 1 Data) -->
+  <g transform="translate(620, 120)">
+    <rect x="0" y="0" width="340" height="520" fill="#FFFFFF" stroke="#2C241E" stroke-width="1.2" rx="4"/>
+    <rect x="0" y="0" width="340" height="32" fill="#2C241E" rx="3"/>
+    <text x="170" y="21" fill="#FAF6F0" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold" text-anchor="middle" letter-spacing="1">PRODUCTION DETAILS (PAGE NO: 1)</text>
+
+    <!-- Specs Items -->
+    <g font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5" fill="#1F1915" transform="translate(14, 52)">
+      <text y="0" font-weight="bold" fill="#8C6636">• FM Carcass Height:</text>
+      <text x="155" y="0">675 + 100mm (775mm)</text>
+
+      <text y="24" font-weight="bold" fill="#8C6636">• FM Carcass Depth:</text>
+      <text x="155" y="24">550mm (Shutter 705mm)</text>
+
+      <text y="48" font-weight="bold" fill="#8C6636">• WM Carcass Height:</text>
+      <text x="155" y="48">660mm (Depth 300mm)</text>
+
+      <text y="72" font-weight="bold" fill="#8C6636">• Carcass Material:</text>
+      <text x="155" y="72" font-weight="bold">BWP (Boiling Water Proof)</text>
+
+      <text y="96" font-weight="bold" fill="#8C6636">• Carcass Colour:</text>
+      <text x="155" y="96">Half White</text>
+
+      <text y="120" font-weight="bold" fill="#8C6636">• FM Shutter Lam:</text>
+      <text x="155" y="120" font-weight="600">21187 HGL Champagne (Merino)</text>
+
+      <text y="144" font-weight="bold" fill="#8C6636">• WM Shutter Lam:</text>
+      <text x="155" y="144" font-weight="600">21091 HGL Frosty White</text>
+
+      <text y="168" font-weight="bold" fill="#8C6636">• Open Box Lam:</text>
+      <text x="155" y="168">37301 LV Montery Elm</text>
+
+      <text y="192" font-weight="bold" fill="#8C6636">• Skirting Lam:</text>
+      <text x="155" y="192">21187 HGL Champagne</text>
+
+      <text y="216" font-weight="bold" fill="#8C6636">• FM Handle Type:</text>
+      <text x="155" y="216">G Profile Handle (Black)</text>
+
+      <text y="240" font-weight="bold" fill="#8C6636">• WM Handle Type:</text>
+      <text x="155" y="240">Extended Shutter Bottom</text>
+
+      <text y="264" font-weight="bold" fill="#8C6636">• Cooktop / Chimney:</text>
+      <text x="155" y="264">Built-in HOB / 2' Chimney</text>
+
+      <text y="288" font-weight="bold" fill="#8C6636">• Hardware Hinges:</text>
+      <text x="155" y="288">EBCO Soft Closing System</text>
+
+      <text y="312" font-weight="bold" fill="#8C6636">• Drawer Runners:</text>
+      <text x="155" y="312">EBCO Tandem &amp; Wooden</text>
+
+      <text y="336" font-weight="bold" fill="#8C6636">• Gas Cylinders:</text>
+      <text x="155" y="336">2 Nos (CNC Vent in Skirting)</text>
+
+      <line x1="0" y1="355" x2="312" y2="355" stroke="#E8DECE" stroke-width="1"/>
+
+      <text y="375" font-weight="bold" fill="#2C241E">ELECTRICAL &amp; LIGHTING SCOPE:</text>
+      <text y="395" font-size="9.5" fill="#64564C">Need groove for strip light below all WM &amp;</text>
+      <text y="410" font-size="9.5" fill="#64564C">spice rack in glass shutter WM (Wall2Wall scope)</text>
+      <text y="435" font-size="9.5" font-weight="600" fill="#8C6636">Loft Shuttering: 540mm H + 70mm Top BS</text>
+    </g>
+  </g>
+</svg>

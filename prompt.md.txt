@@ -1,0 +1,165 @@
+# Project: Professional Interior Designer Portfolio Website
+
+Build a modern, premium, fully responsive Interior Designer Portfolio Website using React.js.
+
+## Personal Information
+- Name: Anitha Roselin S
+- Profession: Interior Designer
+- Experience: 4 Years
+- Location: Al Ain, UAE
+- Email: anitharose2210@gmail.com
+- Phone: +971 56 933 4264
+
+## Technology Stack
+- React.js
+- JavaScript (ES6+)
+- HTML5
+- CSS3
+- React Icons
+- React Router (if required)
+
+## Website Design Style
+Create an elegant, luxury interior design website inspired by premium architecture and interior design studios.
+
+Design requirements:
+- Minimal and modern UI
+- Luxury beige, cream, white and dark brown color palette
+- Large interior photography
+- Elegant typography
+- Smooth animations and transitions
+- Professional layouts
+- Fully responsive for mobile, tablet and desktop
+- Clean and reusable React components
+
+## Website Sections
+
+### 1. Home / Hero Section
+- Large luxury interior design background image
+- Heading: "Designing Spaces, Creating Experiences"
+- Subheading: "Interior Designer | 4 Years of Experience"
+- Short professional introduction
+- View My Portfolio button
+- Contact Me button
+
+### 2. About Me
+Introduce Anitha Roselin S as an Interior Designer with 4 years of experience in residential interior design and 3D visualization.
+
+Highlight:
+- Space planning
+- Furniture layout and design
+- 2D drawings and elevations
+- 3D modelling and realistic rendering
+- Material and finish selection
+- Client coordination
+
+### 3. My Services
+Display services using modern image cards:
+- Residential Interior Design
+- Space Planning
+- Furniture Layout
+- 2D Floor Plans
+- Elevation Drawings
+- 3D Interior Visualization
+- Material and Laminate Selection
+- Interior Detailing
+
+### 4. My Portfolio / Projects
+Create a visually attractive portfolio gallery with category filters.
+
+Categories:
+- Living Room Design
+- Bedroom Design
+- Kitchen Design
+- Modular Kitchen
+- Wardrobe Design
+- Residential Interior Design
+- 3D Visualization
+
+Use large image cards with hover effects.
+
+Allow users to click an image to view a larger project preview.
+
+Use placeholder project images until actual project photographs are provided. Do not invent completed client projects.
+
+### 5. Software Skills
+Show professional software skills with icons or elegant progress-style cards:
+- AutoCAD
+- SketchUp
+- 3ds Max
+- Unreal Engine
+- Adobe Premiere Pro
+
+### 6. Work Experience
+
+Interior Designer – Cookscape
+Chennai, India | 2024 – October 2026
+
+Responsibilities:
+- Developed residential interior concepts.
+- Prepared 2D floor plans and elevation drawings.
+- Planned furniture layouts and interior detailing.
+- Selected laminates, materials, colours and finishes.
+- Coordinated with clients and implemented revisions.
+- Presented 2D and 3D visualizations.
+
+3D Designer – Deo Verse
+Chennai, India | 2022 – 2024
+
+Responsibilities:
+- Created detailed 3D interior models.
+- Produced realistic renderings using 3ds Max and SketchUp.
+- Selected materials, colours and finishes.
+- Incorporated design revisions based on feedback.
+
+### 7. Education
+B.E. Electronics and Communication Engineering (ECE)
+Jayaraj Annapackiam CSI College of Engineering
+Tamil Nadu, India | 2018 – 2022
+
+### 8. Contact Section
+Create a professional contact section with:
+- Name
+- Email
+- Phone Number
+- Message
+- Send Message button
+
+Display:
+Email: anitharose2210@gmail.com
+Phone: +971 56 933 4264
+Location: Al Ain, UAE
+
+Add WhatsApp contact and email links.
+
+### 9. Footer
+- Name and professional title
+- Quick navigation links
+- Email and phone
+- Social media links
+- Copyright information
+
+## Functional Requirements
+- Smooth scrolling navigation
+- Responsive mobile menu
+- Portfolio category filtering
+- Image preview/lightbox
+- Scroll animations
+- Working contact form with validation
+- WhatsApp contact integration
+- Reusable React components
+- Proper folder structure
+- SEO-friendly page titles and descriptions
+- Optimized images and performance
+
+## Expected Output
+Generate complete, working React.js source code.
+
+Provide:
+1. Complete project folder structure.
+2. React components for each section.
+3. CSS styling.
+4. Responsive layouts.
+5. React routing if needed.
+6. Installation and execution instructions.
+
+The final website should look like a premium professional interior design studio portfolio, not a basic resume website.
