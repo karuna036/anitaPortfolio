@@ -223,6 +223,10 @@ export default function AdminPortal({ onClose }) {
     desc: ''
   });
 
+  // Track if editing an existing 2D/3D asset in place
+  const [editingCadIndex, setEditingCadIndex] = useState(null);
+  const [editingRenderIndex, setEditingRenderIndex] = useState(null);
+
   // Load projects from storage
   const refreshProjects = () => {
     const list = getStoredProjects();
@@ -469,6 +473,8 @@ export default function AdminPortal({ onClose }) {
   // Open Create Form
   const handleOpenCreate = () => {
     setEditingProjectId(null);
+    setEditingCadIndex(null);
+    setEditingRenderIndex(null);
     setFormData({
       ...initialFormState,
       id: Date.now(),
@@ -479,9 +485,11 @@ export default function AdminPortal({ onClose }) {
     setIsFormOpen(true);
   };
 
-  // Open Edit Form
-  const handleOpenEdit = (project) => {
+  // Open Edit Form (with optional direct starting tab: 'basic', 'tabs', '2d', '3d')
+  const handleOpenEdit = (project, startingTab = 'basic') => {
     setEditingProjectId(project.id);
+    setEditingCadIndex(null);
+    setEditingRenderIndex(null);
     setFormData({
       ...initialFormState,
       ...project,
@@ -490,7 +498,7 @@ export default function AdminPortal({ onClose }) {
       pdfSheets: project.pdfSheets ? [...project.pdfSheets] : [],
       technicalUnitsList: project.technicalUnitsList || initialFormState.technicalUnitsList
     });
-    setActiveFormTab('basic');
+    setActiveFormTab(startingTab);
     setIsFormOpen(true);
   };
 
@@ -541,7 +549,7 @@ export default function AdminPortal({ onClose }) {
 
     if (editingProjectId) {
       updateProject(editingProjectId, projectToSave);
-      showToast(`Updated project: "${projectToSave.title}"`);
+      showToast(`Updated project: "${projectToSave.title}" with ${formData.galleryImages.length} images!`);
     } else {
       createProject(projectToSave);
       showToast(`Added new project: "${projectToSave.title}"`);
@@ -551,70 +559,162 @@ export default function AdminPortal({ onClose }) {
     refreshProjects();
   };
 
-  // Add 2D CAD Sheet
+  // Start editing an existing 2D CAD sheet
+  const handleStartEditCadSheet = (item, originalIndex) => {
+    setEditingCadIndex(originalIndex);
+    setCadSheetForm({
+      title: item.title,
+      badge: item.badge || '2D',
+      src: item.src,
+      desc: item.desc || '',
+      pdfFile: item.pdfFile || ''
+    });
+    showToast(`Loaded "${item.badge || item.title}" for editing. Update fields & click "Save 2D Sheet".`, 'info');
+  };
+
+  // Cancel editing 2D sheet
+  const handleCancelEditCadSheet = () => {
+    setEditingCadIndex(null);
+    setCadSheetForm({
+      title: '',
+      badge: `2D ${formData.galleryImages.filter(g => g.type?.includes('2D')).length + 1}`,
+      src: '',
+      desc: '',
+      pdfFile: ''
+    });
+  };
+
+  // Add or Update 2D CAD Sheet
   const handleAddCadSheet = () => {
     if (!cadSheetForm.src.trim() || !cadSheetForm.title.trim()) {
       showToast('Please provide both an image and title for the 2D CAD sheet', 'error');
       return;
     }
 
-    const newSheet = {
-      id: `cad-2d-${Date.now()}`,
-      type: '2D Working CAD',
-      badge: cadSheetForm.badge || `2D ${formData.galleryImages.filter(g => g.type?.includes('2D')).length + 1}`,
-      shortLabel: cadSheetForm.badge || '2D Sheet',
-      title: cadSheetForm.title,
-      src: cadSheetForm.src,
-      desc: cadSheetForm.desc || 'Architectural 2D AutoCAD fabrication and joinery plan with detailed dimensions.',
-      pdfFile: cadSheetForm.pdfFile || ''
-    };
+    if (editingCadIndex !== null) {
+      const updated = [...formData.galleryImages];
+      updated[editingCadIndex] = {
+        ...updated[editingCadIndex],
+        title: cadSheetForm.title,
+        badge: cadSheetForm.badge || updated[editingCadIndex].badge,
+        shortLabel: cadSheetForm.badge || updated[editingCadIndex].badge,
+        src: cadSheetForm.src,
+        desc: cadSheetForm.desc,
+        pdfFile: cadSheetForm.pdfFile || ''
+      };
+      setFormData({ ...formData, galleryImages: updated });
+      setEditingCadIndex(null);
+      setCadSheetForm({
+        title: '',
+        badge: `2D ${updated.filter(g => g.type?.includes('2D')).length + 1}`,
+        src: '',
+        desc: '',
+        pdfFile: ''
+      });
+      showToast('2D CAD Sheet updated successfully!');
+    } else {
+      const newSheet = {
+        id: `cad-2d-${Date.now()}`,
+        type: '2D Working CAD',
+        badge: cadSheetForm.badge || `2D ${formData.galleryImages.filter(g => g.type?.includes('2D')).length + 1}`,
+        shortLabel: cadSheetForm.badge || '2D Sheet',
+        title: cadSheetForm.title,
+        src: cadSheetForm.src,
+        desc: cadSheetForm.desc || 'Architectural 2D AutoCAD fabrication and joinery plan with detailed dimensions.',
+        pdfFile: cadSheetForm.pdfFile || ''
+      };
 
-    setFormData({
-      ...formData,
-      galleryImages: [...formData.galleryImages, newSheet]
-    });
+      setFormData({
+        ...formData,
+        galleryImages: [...formData.galleryImages, newSheet]
+      });
 
-    setCadSheetForm({
-      title: '',
-      badge: `2D ${formData.galleryImages.filter(g => g.type?.includes('2D')).length + 2}`,
-      src: '',
-      desc: '',
-      pdfFile: ''
-    });
+      setCadSheetForm({
+        title: '',
+        badge: `2D ${formData.galleryImages.filter(g => g.type?.includes('2D')).length + 2}`,
+        src: '',
+        desc: '',
+        pdfFile: ''
+      });
 
-    showToast('2D CAD Sheet added to project gallery!');
+      showToast('2D CAD Sheet added to project gallery!');
+    }
   };
 
-  // Add 3D Render
+  // Start editing an existing 3D CGI render
+  const handleStartEdit3DRender = (item, originalIndex) => {
+    setEditingRenderIndex(originalIndex);
+    setRender3DForm({
+      title: item.title,
+      badge: item.badge || '3D',
+      src: item.src,
+      desc: item.desc || ''
+    });
+    showToast(`Loaded "${item.badge || item.title}" for editing. Update fields & click "Save 3D Render".`, 'info');
+  };
+
+  // Cancel editing 3D render
+  const handleCancelEdit3DRender = () => {
+    setEditingRenderIndex(null);
+    setRender3DForm({
+      title: '',
+      badge: `3D ${formData.galleryImages.filter(g => g.type?.includes('3D')).length + 1}`,
+      src: '',
+      desc: ''
+    });
+  };
+
+  // Add or Update 3D Render
   const handleAdd3DRender = () => {
     if (!render3DForm.src.trim() || !render3DForm.title.trim()) {
       showToast('Please provide both an image and title for the 3D Render', 'error');
       return;
     }
 
-    const newRender = {
-      id: `render-3d-${Date.now()}`,
-      type: '3D CGI Render',
-      badge: render3DForm.badge || `3D ${formData.galleryImages.filter(g => g.type?.includes('3D')).length + 1}`,
-      shortLabel: render3DForm.badge || '3D View',
-      title: render3DForm.title,
-      src: render3DForm.src,
-      desc: render3DForm.desc || 'Photorealistic 3D visualization render detailing materials, textures, and illumination.'
-    };
+    if (editingRenderIndex !== null) {
+      const updated = [...formData.galleryImages];
+      updated[editingRenderIndex] = {
+        ...updated[editingRenderIndex],
+        title: render3DForm.title,
+        badge: render3DForm.badge || updated[editingRenderIndex].badge,
+        shortLabel: render3DForm.badge || updated[editingRenderIndex].badge,
+        src: render3DForm.src,
+        desc: render3DForm.desc
+      };
+      setFormData({ ...formData, galleryImages: updated });
+      setEditingRenderIndex(null);
+      setRender3DForm({
+        title: '',
+        badge: `3D ${updated.filter(g => g.type?.includes('3D')).length + 1}`,
+        src: '',
+        desc: ''
+      });
+      showToast('3D CGI Render updated successfully!');
+    } else {
+      const newRender = {
+        id: `render-3d-${Date.now()}`,
+        type: '3D CGI Render',
+        badge: render3DForm.badge || `3D ${formData.galleryImages.filter(g => g.type?.includes('3D')).length + 1}`,
+        shortLabel: render3DForm.badge || '3D View',
+        title: render3DForm.title,
+        src: render3DForm.src,
+        desc: render3DForm.desc || 'Photorealistic 3D visualization render detailing materials, textures, and illumination.'
+      };
 
-    setFormData({
-      ...formData,
-      galleryImages: [...formData.galleryImages, newRender]
-    });
+      setFormData({
+        ...formData,
+        galleryImages: [...formData.galleryImages, newRender]
+      });
 
-    setRender3DForm({
-      title: '',
-      badge: `3D ${formData.galleryImages.filter(g => g.type?.includes('3D')).length + 2}`,
-      src: '',
-      desc: ''
-    });
+      setRender3DForm({
+        title: '',
+        badge: `3D ${formData.galleryImages.filter(g => g.type?.includes('3D')).length + 2}`,
+        src: '',
+        desc: ''
+      });
 
-    showToast('3D Render added to project gallery!');
+      showToast('3D Render added to project gallery!');
+    }
   };
 
   // Remove gallery item
@@ -1088,9 +1188,18 @@ export default function AdminPortal({ onClose }) {
                                   </button>
 
                                   <button
+                                    className="action-btn images"
+                                    onClick={() => handleOpenEdit(project, '2d')}
+                                    title="Directly add or edit 2D CAD Plans & 3D Renders"
+                                  >
+                                    <Image size={14} />
+                                    <span>+ 2D/3D Images</span>
+                                  </button>
+
+                                  <button
                                     className="action-btn edit"
                                     onClick={() => handleOpenEdit(project)}
-                                    title="Edit Project Details & Images"
+                                    title="Edit Project Details & Specs"
                                   >
                                     <Edit2 size={15} />
                                     <span>Edit</span>
@@ -1200,6 +1309,16 @@ export default function AdminPortal({ onClose }) {
                             >
                               <Eye size={15} />
                               <span>Preview</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className="action-btn images"
+                              onClick={() => handleOpenEdit(project, '2d')}
+                              title="Add or edit 2D CAD Plans & 3D Renders"
+                            >
+                              <Image size={14} />
+                              <span>+ Images</span>
                             </button>
 
                             <button
@@ -1848,15 +1967,26 @@ export default function AdminPortal({ onClose }) {
                       />
                     </div>
 
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      onClick={handleAddCadSheet}
-                      style={{ marginTop: '8px' }}
-                    >
-                      <Plus size={16} />
-                      <span>Add This 2D Sheet to Project</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={handleAddCadSheet}
+                      >
+                        {editingCadIndex !== null ? <Check size={16} /> : <Plus size={16} />}
+                        <span>{editingCadIndex !== null ? 'Save & Update 2D Sheet' : 'Add This 2D Sheet to Project'}</span>
+                      </button>
+
+                      {editingCadIndex !== null && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={handleCancelEditCadSheet}
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Existing 2D Sheets List */}
@@ -1867,7 +1997,7 @@ export default function AdminPortal({ onClose }) {
                         ?.map((item, originalIndex) => ({ item, originalIndex }))
                         .filter(({ item }) => (item.type || '').includes('2D') || (item.badge || '').includes('2D'))
                         .map(({ item, originalIndex }) => (
-                          <div key={item.id || originalIndex} className="asset-card">
+                          <div key={item.id || originalIndex} className={`asset-card ${editingCadIndex === originalIndex ? 'editing' : ''}`}>
                             <div className="asset-card-thumb">
                               <img src={item.src} alt={item.title} />
                               <span className="asset-card-badge">{item.badge || '2D'}</span>
@@ -1876,14 +2006,24 @@ export default function AdminPortal({ onClose }) {
                               <div className="asset-card-title">{item.title}</div>
                               <div className="asset-card-desc">{item.desc}</div>
                             </div>
-                            <button
-                              type="button"
-                              className="asset-delete-btn"
-                              onClick={() => handleRemoveGalleryItem(originalIndex)}
-                              title="Delete sheet"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                className="asset-edit-btn"
+                                onClick={() => handleStartEditCadSheet(item, originalIndex)}
+                                title="Edit this 2D sheet"
+                              >
+                                <Edit2 size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="asset-delete-btn"
+                                onClick={() => handleRemoveGalleryItem(originalIndex)}
+                                title="Delete sheet"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
                         ))}
                     </div>
@@ -2007,15 +2147,26 @@ export default function AdminPortal({ onClose }) {
                       />
                     </div>
 
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      onClick={handleAdd3DRender}
-                      style={{ marginTop: '8px' }}
-                    >
-                      <Plus size={16} />
-                      <span>Add This 3D Render to Project</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={handleAdd3DRender}
+                      >
+                        {editingRenderIndex !== null ? <Check size={16} /> : <Plus size={16} />}
+                        <span>{editingRenderIndex !== null ? 'Save & Update 3D Render' : 'Add This 3D Render to Project'}</span>
+                      </button>
+
+                      {editingRenderIndex !== null && (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={handleCancelEdit3DRender}
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Existing 3D Renders List */}
@@ -2026,7 +2177,7 @@ export default function AdminPortal({ onClose }) {
                         ?.map((item, originalIndex) => ({ item, originalIndex }))
                         .filter(({ item }) => (item.type || '').includes('3D') || (item.badge || '').includes('3D'))
                         .map(({ item, originalIndex }) => (
-                          <div key={item.id || originalIndex} className="asset-card">
+                          <div key={item.id || originalIndex} className={`asset-card ${editingRenderIndex === originalIndex ? 'editing' : ''}`}>
                             <div className="asset-card-thumb">
                               <img src={item.src} alt={item.title} />
                               <span className="asset-card-badge render">{item.badge || '3D'}</span>
@@ -2035,14 +2186,24 @@ export default function AdminPortal({ onClose }) {
                               <div className="asset-card-title">{item.title}</div>
                               <div className="asset-card-desc">{item.desc}</div>
                             </div>
-                            <button
-                              type="button"
-                              className="asset-delete-btn"
-                              onClick={() => handleRemoveGalleryItem(originalIndex)}
-                              title="Delete render"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                className="asset-edit-btn"
+                                onClick={() => handleStartEdit3DRender(item, originalIndex)}
+                                title="Edit this 3D render"
+                              >
+                                <Edit2 size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                className="asset-delete-btn"
+                                onClick={() => handleRemoveGalleryItem(originalIndex)}
+                                title="Delete render"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
                         ))}
                     </div>

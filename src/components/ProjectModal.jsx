@@ -18,6 +18,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { personalInfo, roomProjects } from '../data/portfolioData';
+import { getStoredProjects } from '../services/projectStorage';
 
 export default function ProjectModal({ project: initialProject, onClose }) {
   // Determine starting room based on initial project
@@ -34,10 +35,20 @@ export default function ProjectModal({ project: initialProject, onClose }) {
 
   const [activeRoom, setActiveRoom] = useState(getInitialRoom());
   const [activeProject, setActiveProject] = useState(
-    roomProjects[getInitialRoom()] || initialProject
+    initialProject || roomProjects[getInitialRoom()]
   );
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('visuals');
+
+  useEffect(() => {
+    if (initialProject) {
+      // Find latest stored version of this project so any CRUD updates to 2D/3D images are live
+      const stored = getStoredProjects();
+      const fresh = stored.find(p => String(p.id) === String(initialProject.id)) || initialProject;
+      setActiveProject(fresh);
+      setSelectedMediaIndex(0);
+    }
+  }, [initialProject]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -54,7 +65,18 @@ export default function ProjectModal({ project: initialProject, onClose }) {
 
   const handleSwitchRoom = (roomName) => {
     setActiveRoom(roomName);
-    if (roomProjects[roomName]) {
+    const stored = getStoredProjects();
+    const foundStored = stored.find(
+      p => p.roomKey === roomName ||
+           (p.tabNames && p.tabNames.includes(roomName)) ||
+           (p.categories && p.categories.includes(roomName)) ||
+           (p.title && p.title.toLowerCase().includes(roomName.toLowerCase()))
+    );
+    if (foundStored) {
+      setActiveProject(foundStored);
+      setSelectedMediaIndex(0);
+      setActiveTab('visuals');
+    } else if (roomProjects[roomName]) {
       setActiveProject(roomProjects[roomName]);
       setSelectedMediaIndex(0);
       setActiveTab('visuals');

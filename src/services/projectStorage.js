@@ -1,7 +1,7 @@
 import { portfolioProjects as defaultPortfolioProjects, portfolioCategories as defaultCategories, roomProjects as defaultRoomProjects } from '../data/portfolioData';
 
-const STORAGE_PROJECTS_KEY = 'anitha_portfolio_projects_v3';
-const STORAGE_CATEGORIES_KEY = 'anitha_portfolio_categories_v3';
+const STORAGE_PROJECTS_KEY = 'anitha_portfolio_projects_v4';
+const STORAGE_CATEGORIES_KEY = 'anitha_portfolio_categories_v4';
 const STORAGE_AUTH_KEY = 'anitha_admin_session';
 
 // Default Administrator Account
