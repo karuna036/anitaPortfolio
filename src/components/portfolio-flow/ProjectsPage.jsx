@@ -10,7 +10,9 @@ import {
   Search,
   Sliders,
   ChevronRight,
-  CheckCircle2
+  CheckCircle2,
+  FolderPlus,
+  Plus
 } from 'lucide-react';
 import { getAllInteriorProjects } from '../../data/interiorProjectsData';
 
@@ -151,8 +153,26 @@ export default function ProjectsPage() {
 
       {/* Projects Grid */}
       <div className="flow-projects-grid">
-        {filteredProjects.length === 0 ? (
-          <div className="flow-empty-state">
+        {projects.length === 0 ? (
+          <div className="flow-empty-state" style={{ gridColumn: '1 / -1', padding: '60px 24px' }}>
+            <FolderPlus size={48} color="#C9A474" />
+            <h3 style={{ fontSize: '1.4rem', marginTop: '14px', marginBottom: '8px' }}>
+              No Interior Design Projects Yet
+            </h3>
+            <p style={{ maxWidth: '560px', margin: '0 auto 20px auto', lineHeight: '1.6' }}>
+              All default sample projects and categories have been deleted. You can now create your own custom residential projects, map room spaces (Kitchen, Bedroom, Living Room, etc.), and upload 2D CAD floor plans and 3D CGI photorealistic renders.
+            </p>
+            <a
+              href="#admin"
+              className="btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}
+            >
+              <Plus size={16} />
+              <span>Open Admin Portal &bull; Create Project</span>
+            </a>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="flow-empty-state" style={{ gridColumn: '1 / -1' }}>
             <Compass size={36} color="#C9A474" />
             <h3>No projects found matching your criteria</h3>
             <p>Try resetting the category filter or clearing your search term.</p>

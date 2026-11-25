@@ -9,7 +9,8 @@ import {
   Sparkles,
   Compass,
   ArrowRight,
-  Maximize2
+  Maximize2,
+  Plus
 } from 'lucide-react';
 import { getInteriorProjectById } from '../../data/interiorProjectsData';
 
@@ -137,9 +138,26 @@ export default function ProjectCategoriesPage() {
 
       {/* Categories Grid (Core Navigation Step 2) */}
       <div className="flow-categories-grid">
-        {project.categories.map((category) => {
-          const count3D = category.images.filter((img) => img.type === '3D').length;
-          const count2D = category.images.filter((img) => img.type === '2D').length;
+        {project.categories.length === 0 ? (
+          <div className="flow-empty-state" style={{ gridColumn: '1 / -1', padding: '50px 24px' }}>
+            <Layers size={44} color="#C9A474" />
+            <h3 style={{ fontSize: '1.3rem', marginTop: '12px' }}>No Room Categories Mapped Yet</h3>
+            <p style={{ maxWidth: '540px', margin: '0 auto 20px auto' }}>
+              This project does not have any room categories mapped yet. Open the Admin Portal (Form 2: Categories &amp; 2D/3D Images Mapping) to add room spaces like Kitchen, Master Bedroom, Living Room, etc.
+            </p>
+            <a
+              href="#admin"
+              className="btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}
+            >
+              <Plus size={16} />
+              <span>Map Categories &amp; 2D/3D Images</span>
+            </a>
+          </div>
+        ) : (
+          project.categories.map((category) => {
+            const count3D = category.images.filter((img) => img.type === '3D').length;
+            const count2D = category.images.filter((img) => img.type === '2D').length;
 
           return (
             <div
@@ -216,7 +234,8 @@ export default function ProjectCategoriesPage() {
               </div>
             </div>
           );
-        })}
+        })
+      )}
       </div>
     </div>
   );

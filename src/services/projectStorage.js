@@ -1,7 +1,7 @@
 import { portfolioProjects as defaultPortfolioProjects, portfolioCategories as defaultCategories, roomProjects as defaultRoomProjects } from '../data/portfolioData';
 
-const STORAGE_PROJECTS_KEY = 'anitha_portfolio_projects_v5';
-const STORAGE_CATEGORIES_KEY = 'anitha_portfolio_categories_v5';
+const STORAGE_PROJECTS_KEY = 'anitha_portfolio_projects_v6';
+const STORAGE_CATEGORIES_KEY = 'anitha_portfolio_categories_v6';
 const STORAGE_AUTH_KEY = 'anitha_admin_session';
 
 // Default Administrator Account
@@ -77,7 +77,7 @@ export function getAdminSession() {
 }
 
 /**
- * Retrieve all projects from localStorage (or fallback to defaults)
+ * Retrieve all projects from localStorage (default is empty [])
  */
 export function getStoredProjects() {
   try {
@@ -89,21 +89,14 @@ export function getStoredProjects() {
       }
     }
   } catch (err) {
-    console.warn('Failed to parse stored projects, falling back to defaults:', err);
+    console.warn('Failed to parse stored projects:', err);
   }
 
-  // Fallback: Clone defaults into storage
-  try {
-    const initialClone = JSON.parse(JSON.stringify(defaultPortfolioProjects));
-    localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(initialClone));
-    return initialClone;
-  } catch (e) {
-    return defaultPortfolioProjects;
-  }
+  return [];
 }
 
 /**
- * Retrieve all category tags from storage or default
+ * Retrieve all category tags from storage or empty
  */
 export function getStoredCategories() {
   try {
@@ -118,20 +111,16 @@ export function getStoredCategories() {
     console.warn('Failed to parse stored categories:', err);
   }
 
-  // Derive unique categories from stored projects + defaults
+  // Derive unique categories from stored projects
   const projects = getStoredProjects();
-  const set = new Set(defaultCategories);
+  const set = new Set();
   projects.forEach((p) => {
     if (Array.isArray(p.categories)) {
       p.categories.forEach((cat) => set.add(cat));
     }
   });
 
-  const categories = Array.from(set);
-  try {
-    localStorage.setItem(STORAGE_CATEGORIES_KEY, JSON.stringify(categories));
-  } catch (e) {}
-  return categories;
+  return Array.from(set);
 }
 
 /**
@@ -219,13 +208,12 @@ export function deleteProject(idOrProject) {
 }
 
 /**
- * Reset all projects and categories back to original built-in defaults
+ * Reset / clear all projects and categories
  */
 export function resetProjectsToDefault() {
   try {
-    const initialClone = JSON.parse(JSON.stringify(defaultPortfolioProjects));
-    localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(initialClone));
-    localStorage.setItem(STORAGE_CATEGORIES_KEY, JSON.stringify(defaultCategories));
+    localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify([]));
+    localStorage.setItem(STORAGE_CATEGORIES_KEY, JSON.stringify([]));
     window.dispatchEvent(new Event('portfolio_projects_updated'));
     return true;
   } catch (err) {

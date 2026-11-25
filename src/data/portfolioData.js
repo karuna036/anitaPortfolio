@@ -106,18 +106,7 @@ export const services = [
   }
 ];
 
-export const portfolioCategories = [
-  "All",
-  "Kitchen",
-  "Crockery Unit",
-  "Living Vanity",
-  "Master Bedroom TV Unit",
-  "Bedroom",
-  "Living Room",
-  "Modular Kitchen",
-  "2D Floor Plans",
-  "3D Visualization"
-];
+export const portfolioCategories = [];
 
 export const roomProjects = {
   Kitchen: {
@@ -885,81 +874,7 @@ export const theSapphireResidenceProject = {
   }
 };
 
-export const portfolioProjects = [
-  roomProjects.Kitchen,
-  theSapphireResidenceProject,
-  roomProjects.Crockery,
-  roomProjects["Living Vanity"],
-  roomProjects["Master Bedroom TV Unit"],
-  roomProjects.Bedroom,
-  roomProjects["Living Room"],
-  {
-    id: 4,
-    title: "Monochrome & Brass Chef's Kitchen",
-    categories: ["Kitchen", "Kitchen Design", "Modular Kitchen"],
-    categoryLabel: "Kitchen Design",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80",
-    description: "Contemporary kitchen concept showcasing handle-less matte cabinetry, seamless waterfall quartz island with fluted base, and hidden pantry integration.",
-    scope: "Work triangle optimization, modular internal storage planning, MEP coordinate drawings, and material selection.",
-    software: ["AutoCAD", "3ds Max", "SketchUp"],
-    palette: ["Matte Charcoal", "Calacatta Gold Quartz", "Warm Oak", "Warm Brushed Brass"]
-  },
-  {
-    id: 5,
-    title: "Bespoke Glass Walk-In Wardrobe & Vanity",
-    categories: ["Bedroom", "Wardrobe Design", "Bedroom Design"],
-    categoryLabel: "Wardrobe Design",
-    image: "https://images.unsplash.com/photo-1558997519-83ea9252def8?auto=format&fit=crop&w=1200&q=80",
-    description: "Luxury tinted glass wardrobe system with anodized bronze profiles, internal LED accent strip illumination, custom leather accessory drawers, and mirrored vanity island.",
-    scope: "Bespoke joinery sections, internal storage zoning, lighting calculations, and elevation drawings.",
-    software: ["AutoCAD", "SketchUp", "3ds Max"],
-    palette: ["Smoked Glass", "Bronze Aluminum", "Italian Walnut", "Suede Grey"]
-  },
-  {
-    id: 6,
-    title: "Nordic Minimalist Modular Kitchen Studio",
-    categories: ["Kitchen", "Kitchen Design", "Modular Kitchen", "3D Visualization"],
-    categoryLabel: "Modular Kitchen",
-    image: "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=1200&q=80",
-    description: "Ergonomic modular kitchen with built-in tandem drawers, tall pantry unit with pull-out wire baskets, acoustic slat wall, and ambient under-cabinet profile lighting.",
-    scope: "Modular carcass design, hardware specification (Blum/Hettich), laminate pairing, and photorealistic rendering.",
-    software: ["3ds Max", "AutoCAD", "SketchUp"],
-    palette: ["Oatmeal Matte", "White Birch", "Terrazzo Countertop", "Matte Black"]
-  },
-  {
-    id: 7,
-    title: "Sanctuary Guest Suite with Floating Millwork",
-    categories: ["Bedroom", "Bedroom Design", "Wardrobe Design"],
-    categoryLabel: "Bedroom Design",
-    image: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80",
-    description: "Space-conscious guest bedroom design featuring cantilevered floating nightstands, seamless wardrobe with concealed finger-pulls, and indirect linear warm glow lighting.",
-    scope: "Compact spatial optimization, joinery elevations, material scheduling, and photorealistic perspective rendering.",
-    software: ["AutoCAD", "3ds Max"],
-    palette: ["Sand White", "Light Ash", "Brushed Bronze", "Natural Linen"]
-  },
-  {
-    id: 8,
-    title: "Minimalist Architectural Villa Visualization",
-    categories: ["Living Room", "3D Visualization", "Residential Interior Design", "Living Room Design"],
-    categoryLabel: "3D Visualization",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
-    description: "Photorealistic CGI visualization study exploring direct sunlight angles, architectural light wells, raw concrete elements, and warm timber micro-textures.",
-    scope: "Detailed 3D volumetric massing, photometrics, high-resolution V-Ray material mapping, and camera composition.",
-    software: ["3ds Max", "Unreal Engine", "Adobe Premiere Pro"],
-    palette: ["Exposed Microcement", "White Oak", "Raw Clay", "Warm Sunlight"]
-  },
-  {
-    id: 9,
-    title: "Contemporary Integrated Sliding Wardrobe Suite",
-    categories: ["Bedroom", "Wardrobe Design", "Modular Kitchen"],
-    categoryLabel: "Wardrobe Design",
-    image: "https://images.unsplash.com/photo-1594040226829-7f251ab46d80?auto=format&fit=crop&w=1200&q=80",
-    description: "Floor-to-ceiling modular wardrobe system with soft-close sliding dampers, dual-tone leatherette inlays, integrated full-length mirror, and overhead loft optimization.",
-    scope: "Full fabrication drawings, 2D elevation and cross-sections, hardware scheduling, and 3D preview.",
-    software: ["AutoCAD", "SketchUp", "3ds Max"],
-    palette: ["Warm Greige", "Textured Linen Laminate", "Champagne Trim"]
-  }
-];
+export const portfolioProjects = [];
 
 export const softwareSkills = [
   {

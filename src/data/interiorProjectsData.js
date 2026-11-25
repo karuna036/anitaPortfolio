@@ -3,7 +3,11 @@
  * Core Concept: Project → Multiple Categories → Multiple 2D & 3D Images
  */
 
-export const interiorProjects = [
+// Default projects initialized to empty (All default projects and categories deleted)
+export const interiorProjects = [];
+
+// Optional sample showcase projects for demo reload if needed
+export const sampleShowcaseProjects = [
   {
     id: "the-grand-pavilion",
     title: "The Grand Pavilion & Luxury Residence",
@@ -695,33 +699,52 @@ export const interiorProjects = [
 ];
 
 // Storage Key for LocalStorage Persistence
-const STORAGE_INTERIOR_KEY = 'anitha_interior_flow_projects_v2';
+const STORAGE_INTERIOR_KEY = 'anitha_interior_flow_projects_v4';
 
 /**
- * Retrieve all projects from localStorage (or initialize with defaults)
+ * Retrieve all projects from localStorage (default is empty [])
  */
 export function getAllInteriorProjects() {
-  if (typeof window === 'undefined') return interiorProjects;
+  if (typeof window === 'undefined') return [];
   try {
     const stored = localStorage.getItem(STORAGE_INTERIOR_KEY);
-    if (stored) {
+    if (stored !== null) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed;
       }
     }
   } catch (err) {
-    console.warn('Failed to parse interior projects from storage, using defaults:', err);
+    console.warn('Failed to parse interior projects from storage:', err);
   }
 
-  // Initialize storage with defaults
+  // Initialize storage with clean empty array
   try {
-    const clone = JSON.parse(JSON.stringify(interiorProjects));
-    localStorage.setItem(STORAGE_INTERIOR_KEY, JSON.stringify(clone));
-    return clone;
-  } catch (e) {
-    return interiorProjects;
-  }
+    localStorage.setItem(STORAGE_INTERIOR_KEY, JSON.stringify([]));
+    // Clear old versions
+    localStorage.removeItem('anitha_interior_flow_projects_v1');
+    localStorage.removeItem('anitha_interior_flow_projects_v2');
+    localStorage.removeItem('anitha_interior_flow_projects_v3');
+  } catch (e) {}
+
+  return [];
+}
+
+/**
+ * Clear all projects and categories (Wipe all)
+ */
+export function clearAllInteriorProjects() {
+  saveInteriorProjects([]);
+  return [];
+}
+
+/**
+ * Optional: Load sample showcase projects for demo purposes
+ */
+export function loadSampleShowcaseProjects() {
+  const clone = JSON.parse(JSON.stringify(sampleShowcaseProjects));
+  saveInteriorProjects(clone);
+  return clone;
 }
 
 /**
@@ -907,20 +930,10 @@ export function deleteCategoryFromProject(projectId, categoryId) {
 }
 
 /**
- * Reset all interior projects back to original built-in defaults
+ * Clear / reset all interior projects and categories
  */
 export function resetInteriorProjectsToDefault() {
-  try {
-    const clone = JSON.parse(JSON.stringify(interiorProjects));
-    localStorage.setItem(STORAGE_INTERIOR_KEY, JSON.stringify(clone));
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('interior_projects_updated'));
-    }
-    return clone;
-  } catch (err) {
-    console.error('Failed to reset interior projects:', err);
-    return interiorProjects;
-  }
+  return clearAllInteriorProjects();
 }
 
 /**

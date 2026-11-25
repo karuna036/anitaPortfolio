@@ -483,7 +483,20 @@ export default function Portfolio({ onOpenAdmin }) {
             {/* PILLAR 3: PROJECT GALLERY GRID WITH 2D/3D COUNTS & SPACES        */}
             {/* ================================================================= */}
             <div className="portfolio-grid">
-              {filteredProjects.length === 0 ? (
+              {projects.length === 0 ? (
+                <div className="portfolio-empty-box" style={{ gridColumn: '1 / -1', padding: '50px 20px', textAlign: 'center' }}>
+                  <Compass size={36} color="#C9A474" />
+                  <h4>All Default Projects &amp; Categories Cleared</h4>
+                  <p style={{ maxWidth: '480px', margin: '8px auto 18px auto', color: 'var(--color-text-muted)' }}>
+                    All default sample projects have been cleared. Open the Admin Portal to create your custom projects, or explore the multi-category flow above.
+                  </p>
+                  {onOpenAdmin && (
+                    <button type="button" className="btn-primary" onClick={onOpenAdmin}>
+                      Open Admin Portal &bull; Create Project
+                    </button>
+                  )}
+                </div>
+              ) : filteredProjects.length === 0 ? (
                 <div className="portfolio-empty-box">
                   <Compass size={32} color="#C9A474" />
                   <h4>No projects match your filter criteria</h4>

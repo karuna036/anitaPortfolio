@@ -45,6 +45,8 @@ import {
   saveCategoryWithImages,
   deleteCategoryFromProject,
   resetInteriorProjectsToDefault,
+  clearAllInteriorProjects,
+  loadSampleShowcaseProjects,
   fileToBase64,
   slugify
 } from '../data/interiorProjectsData';
@@ -391,10 +393,24 @@ export default function AdminPortal({ onClose }) {
     }
   };
 
-  const handleResetDefaults = () => {
-    if (window.confirm('Reset all projects back to the original 4 signature luxury projects? Any custom projects will be replaced.')) {
-      resetInteriorProjectsToDefault();
-      showToast('success', 'Reset completed! Default 4 projects loaded with full room categories & 2D/3D images.');
+  const handleClearAllProjects = () => {
+    if (window.confirm('Are you sure you want to delete ALL projects and categories? This will clear all data.')) {
+      clearAllInteriorProjects();
+      setProjects([]);
+      setSelectedProjectId('');
+      setSelectedCategoryId('');
+      showToast('info', 'All default projects and categories have been deleted. You have a clean slate!');
+    }
+  };
+
+  const handleLoadDemoProjects = () => {
+    if (window.confirm('Load the 4 luxury showcase projects with complete room categories and 2D/3D images?')) {
+      const loaded = loadSampleShowcaseProjects();
+      setProjects(loaded);
+      if (loaded.length > 0) {
+        setSelectedProjectId(loaded[0].id);
+      }
+      showToast('success', '4 luxury showcase projects and room categories loaded successfully!');
     }
   };
 
@@ -797,11 +813,22 @@ export default function AdminPortal({ onClose }) {
                 <button
                   type="button"
                   className="btn-outline"
-                  onClick={handleResetDefaults}
-                  title="Reload original 4 luxury showcase projects"
+                  onClick={handleClearAllProjects}
+                  title="Delete all projects and categories (Clean Slate)"
+                  style={{ borderColor: 'rgba(255, 90, 90, 0.4)', color: '#FFA3A3' }}
+                >
+                  <Trash2 size={14} />
+                  <span>Clear All Projects</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={handleLoadDemoProjects}
+                  title="Load 4 sample luxury showcase projects"
                 >
                   <RotateCcw size={14} />
-                  <span>Reset Defaults</span>
+                  <span>Load Sample Projects</span>
                 </button>
               </div>
             </div>
@@ -982,7 +1009,38 @@ export default function AdminPortal({ onClose }) {
 
             {/* Projects List Grid */}
             <div className="admin-projects-cards-grid">
-              {filteredProjects.map((project) => {
+              {projects.length === 0 ? (
+                <div
+                  className="admin-empty-state-card"
+                  style={{
+                    gridColumn: '1 / -1',
+                    padding: '60px 24px',
+                    textAlign: 'center',
+                    background: '#171513',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px dashed rgba(201, 164, 116, 0.35)'
+                  }}
+                >
+                  <FolderPlus size={48} color="#C9A474" />
+                  <h3 style={{ marginTop: '14px', marginBottom: '8px', color: '#FFFFFF', fontSize: '1.35rem' }}>
+                    All Default Projects &amp; Categories Deleted
+                  </h3>
+                  <p style={{ color: 'var(--color-text-muted)', maxWidth: '520px', margin: '0 auto 22px auto', lineHeight: '1.6' }}>
+                    The system is completely clean. Click the button below to create your first custom residential project, then map room categories (Kitchen, Bedroom, Living Room, etc.) and upload 2D &amp; 3D images.
+                  </p>
+                  <button type="button" className="btn-primary" onClick={handleOpenCreateProject}>
+                    <Plus size={16} />
+                    <span>Create Your First Project</span>
+                  </button>
+                </div>
+              ) : filteredProjects.length === 0 ? (
+                <div className="admin-empty-state-card" style={{ gridColumn: '1 / -1', padding: '40px 20px', textAlign: 'center' }}>
+                  <Search size={36} color="#C9A474" />
+                  <h3 style={{ marginTop: '10px', color: '#FFFFFF' }}>No projects match your filter</h3>
+                  <p style={{ color: 'var(--color-text-muted)' }}>Try resetting or clearing your search term.</p>
+                </div>
+              ) : (
+                filteredProjects.map((project) => {
                 const categories = project.categories || [];
                 let total2D = 0;
                 let total3D = 0;
@@ -1081,7 +1139,8 @@ export default function AdminPortal({ onClose }) {
                     </div>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
         )}
@@ -1117,6 +1176,39 @@ export default function AdminPortal({ onClose }) {
               )}
             </div>
 
+            {projects.length === 0 ? (
+              <div
+                className="admin-empty-state-card"
+                style={{
+                  padding: '60px 24px',
+                  textAlign: 'center',
+                  background: '#171513',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px dashed rgba(201, 164, 116, 0.35)',
+                  margin: '20px 0'
+                }}
+              >
+                <FolderPlus size={48} color="#C9A474" />
+                <h3 style={{ marginTop: '14px', marginBottom: '8px', color: '#FFFFFF', fontSize: '1.35rem' }}>
+                  No Projects Available to Map
+                </h3>
+                <p style={{ color: 'var(--color-text-muted)', maxWidth: '520px', margin: '0 auto 22px auto', lineHeight: '1.6' }}>
+                  All default projects and categories have been deleted. You need to create a project first in Form 1 before mapping room categories, 2D CAD plans, and 3D CGI renders.
+                </p>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    setActiveTab('form1-projects');
+                    handleOpenCreateProject();
+                  }}
+                >
+                  <Plus size={16} />
+                  <span>Go to Form 1: Create Project</span>
+                </button>
+              </div>
+            ) : (
+              <>
             {/* STEP 1: PROJECT SELECTION SELECTOR */}
             <div className="admin-mapping-step-box">
               <div className="step-badge-indicator">
@@ -1632,6 +1724,8 @@ export default function AdminPortal({ onClose }) {
                 </button>
               </div>
             </div>
+            </>
+            )}
           </div>
         )}
 
@@ -1665,7 +1759,34 @@ export default function AdminPortal({ onClose }) {
 
             {/* Interactive Preview Tree */}
             <div className="live-flow-tree-container">
-              {projects.map((project, pIdx) => {
+              {projects.length === 0 ? (
+                <div
+                  className="admin-empty-state-card"
+                  style={{
+                    padding: '60px 24px',
+                    textAlign: 'center',
+                    background: '#171513',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px dashed rgba(201, 164, 116, 0.35)'
+                  }}
+                >
+                  <Layers size={48} color="#C9A474" />
+                  <h3 style={{ marginTop: '14px', marginBottom: '8px', color: '#FFFFFF', fontSize: '1.35rem' }}>
+                    Portfolio Flow is Empty
+                  </h3>
+                  <p style={{ color: 'var(--color-text-muted)', maxWidth: '520px', margin: '0 auto 22px auto', lineHeight: '1.6' }}>
+                    All default projects and categories have been deleted. Once you create your own projects in Form 1 and map room categories with 2D/3D images in Form 2, the live tree preview will appear here.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => setActiveTab('form1-projects')}
+                  >
+                    <span>Go to Form 1: Projects CRUD</span>
+                  </button>
+                </div>
+              ) : (
+                projects.map((project, pIdx) => {
                 const categories = project.categories || [];
 
                 return (
@@ -1727,7 +1848,8 @@ export default function AdminPortal({ onClose }) {
                     </div>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
         )}
