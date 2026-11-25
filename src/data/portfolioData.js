@@ -123,9 +123,20 @@ export const roomProjects = {
   Kitchen: {
     id: 1,
     roomKey: "Kitchen",
-    title: "Project 1: L-Shaped Modular Kitchen (3D Visualization & 2D Working Drawings)",
-    categories: ["Kitchen", "Modular Kitchen", "Kitchen Design", "3D Visualization", "2D Floor Plans", "Residential Interior Design"],
-    categoryLabel: "Kitchen Plan · 3D Renders & 2D CAD",
+    title: "Project 1: Multi-Space Residence – L-Shaped Kitchen, Bedroom TV Suite & Living Architecture (3D & 2D CAD)",
+    categories: [
+      "Kitchen",
+      "Bedroom",
+      "Living Room",
+      "Modular Kitchen",
+      "Crockery Unit",
+      "Living Vanity",
+      "Master Bedroom TV Unit",
+      "3D Visualization",
+      "2D Floor Plans",
+      "Residential Interior Design"
+    ],
+    categoryLabel: "Multi-Category Project · Kitchen · Bedroom · Living Suite",
     image: "/assets/kitchen-3d-render-1.jpg",
     isTechnicalCAD: true,
     has3DRenders: true,
@@ -134,6 +145,8 @@ export const roomProjects = {
       {
         id: "3d-1",
         type: "3D CGI Render",
+        room: "Kitchen",
+        category: "Kitchen",
         shortLabel: "3D View 1",
         badge: "3D 1",
         title: "3D Photorealistic Render – Frontal Perspective",
@@ -143,6 +156,8 @@ export const roomProjects = {
       {
         id: "3d-2",
         type: "3D CGI Render",
+        room: "Kitchen",
+        category: "Kitchen",
         shortLabel: "3D View 2",
         badge: "3D 2",
         title: "3D Photorealistic Render – Wide Angle Dining Perspective",
@@ -152,6 +167,8 @@ export const roomProjects = {
       {
         id: "3d-3",
         type: "3D CGI Render",
+        room: "Kitchen",
+        category: "Crockery Unit",
         shortLabel: "3D Crockery 3",
         badge: "3D 3",
         title: "3D Photorealistic Render – Crockery Unit & Dining Transition",
@@ -161,6 +178,8 @@ export const roomProjects = {
       {
         id: "2d-1",
         type: "2D Working Plan",
+        room: "Kitchen",
+        category: "Kitchen",
         shortLabel: "2D Plan 1",
         badge: "2D 1",
         title: "CAD Sheet 1: 2D Working Floor Plan & Production Details",
@@ -171,6 +190,8 @@ export const roomProjects = {
       {
         id: "2d-2",
         type: "2D Isometric CAD",
+        room: "Kitchen",
+        category: "Kitchen",
         shortLabel: "2D Iso 2",
         badge: "2D 2",
         title: "CAD Sheet 2: 3D Isometric Wireframe & Corner Assembly",
@@ -181,6 +202,8 @@ export const roomProjects = {
       {
         id: "2d-3",
         type: "2D Loft Plan",
+        room: "Kitchen",
+        category: "Kitchen",
         shortLabel: "2D Loft 3",
         badge: "2D 3",
         title: "CAD Sheet 3: Loft Only Shuttering & Framework Elevation",
@@ -191,6 +214,8 @@ export const roomProjects = {
       {
         id: "2d-4",
         type: "2D Crockery CAD",
+        room: "Kitchen",
+        category: "Crockery Unit",
         shortLabel: "2D Crockery 4",
         badge: "2D 4",
         title: "CAD Sheet 4: Crockery Unit External & Internal Elevation Plan",
@@ -201,6 +226,8 @@ export const roomProjects = {
       {
         id: "2d-5",
         type: "2D Vanity CAD",
+        room: "Living Room",
+        category: "Living Vanity",
         shortLabel: "2D Vanity 5",
         badge: "2D 5",
         title: "CAD Sheet 5: Living Vanity External & Internal Elevation Plan",
@@ -210,6 +237,8 @@ export const roomProjects = {
       {
         id: "3d-4",
         type: "3D CGI Render",
+        room: "Living Room",
+        category: "Living Vanity",
         shortLabel: "3D Vanity 4",
         badge: "3D 4",
         title: "3D Photorealistic Render – Living Vanity & Dining Niche",
@@ -219,6 +248,8 @@ export const roomProjects = {
       {
         id: "2d-6",
         type: "2D TV Unit CAD",
+        room: "Bedroom",
+        category: "Master Bedroom TV Unit",
         shortLabel: "2D TV Unit 6",
         badge: "2D 6",
         title: "CAD Sheet 6: Master Bedroom TV Unit External & Internal Elevation Plan",
@@ -228,6 +259,8 @@ export const roomProjects = {
       {
         id: "3d-5",
         type: "3D CGI Render",
+        room: "Bedroom",
+        category: "Master Bedroom TV Unit",
         shortLabel: "3D TV Unit 5",
         badge: "3D 5",
         title: "3D Photorealistic Render – Master Bedroom TV Unit & Wardrobe Suite",

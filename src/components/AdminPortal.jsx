@@ -1286,7 +1286,7 @@ export default function AdminPortal({ onClose }) {
                       <tr>
                         <th>Cover</th>
                         <th>Project Details</th>
-                        <th>Tab Names / Spaces</th>
+                        <th>Mapped Categories (One Project ➔ Multi-Cat)</th>
                         <th>2D CAD Designs</th>
                         <th>3D CGI Renders</th>
                         <th style={{ textAlign: 'right' }}>Actions (CRUD)</th>
@@ -1303,7 +1303,7 @@ export default function AdminPortal({ onClose }) {
                         filteredProjects.map((project) => {
                           const cadCount = (project.galleryImages || []).filter(g => (g.type || '').includes('2D') || (g.badge || '').includes('2D')).length;
                           const renderCount = (project.galleryImages || []).filter(g => (g.type || '').includes('3D') || (g.badge || '').includes('3D')).length;
-                          const tabs = project.tabNames || (project.roomKey ? [project.roomKey] : ['Main Plan']);
+                          const categories = project.categories || [project.category || 'Design'];
 
                           return (
                             <tr key={project.id} className="admin-table-row">
@@ -1332,12 +1332,17 @@ export default function AdminPortal({ onClose }) {
                               </td>
 
                               <td>
-                                <div className="admin-tabs-chip-list">
-                                  {tabs.map((tab, idx) => (
-                                    <span key={idx} className="admin-tab-chip">
-                                      {tab}
-                                    </span>
-                                  ))}
+                                <div className="admin-mapped-categories-cell">
+                                  <div className="admin-tabs-chip-list" style={{ maxWidth: '280px' }}>
+                                    {categories.map((cat, idx) => (
+                                      <span key={idx} className="admin-cat-chip mapped" style={{ background: 'rgba(201, 164, 116, 0.12)', border: '1px solid rgba(201, 164, 116, 0.35)', color: '#FFFFFF', padding: '3px 8px', borderRadius: '4px', fontSize: '0.74rem' }}>
+                                        {cat}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <span className="file-hint" style={{ display: 'block', marginTop: '4px', color: 'var(--color-accent)' }}>
+                                    ✨ {categories.length} Categories Mapped
+                                  </span>
                                 </div>
                               </td>
 
@@ -2130,6 +2135,77 @@ export default function AdminPortal({ onClose }) {
                       </div>
                       <div className="mapped-count-badge">
                         <b>{formData.categories?.length || 0}</b> Categories Mapped
+                      </div>
+                    </div>
+
+                    {/* Quick Multi-Category Preset Bundles */}
+                    <div className="admin-quick-bundles-bar" style={{ margin: '10px 0 16px 0', background: 'rgba(255, 255, 255, 0.03)', padding: '12px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <span className="file-hint" style={{ display: 'block', marginBottom: '8px', color: 'var(--color-accent)', fontWeight: 600 }}>
+                        ⚡ 1-Click Multi-Category Mapping Presets:
+                      </span>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="admin-toggle-pill"
+                          onClick={() => {
+                            const bundle = ['Kitchen', 'Bedroom', 'Modular Kitchen'];
+                            const combined = Array.from(new Set([...(formData.categories || []), ...bundle]));
+                            setFormData({ ...formData, categories: combined });
+                            showToast('Mapped: Kitchen + Bedroom Suite');
+                          }}
+                        >
+                          <Plus size={12} />
+                          <span>+ Kitchen &amp; Bedroom</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-toggle-pill"
+                          onClick={() => {
+                            const bundle = ['Kitchen', 'Bedroom', 'Living Room', 'Modular Kitchen'];
+                            const combined = Array.from(new Set([...(formData.categories || []), ...bundle]));
+                            setFormData({ ...formData, categories: combined });
+                            showToast('Mapped: Kitchen + Bedroom + Living Room');
+                          }}
+                        >
+                          <Plus size={12} />
+                          <span>+ Kitchen + Bedroom + Living</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-toggle-pill"
+                          onClick={() => {
+                            const bundle = ['3D Visualization', '2D Floor Plans', 'Residential Interior Design'];
+                            const combined = Array.from(new Set([...(formData.categories || []), ...bundle]));
+                            setFormData({ ...formData, categories: combined });
+                            showToast('Mapped: 3D Visualization & 2D CAD Plans');
+                          }}
+                        >
+                          <Plus size={12} />
+                          <span>+ 3D Renders &amp; 2D Plans</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-toggle-pill"
+                          onClick={() => {
+                            setFormData({ ...formData, categories: [...POPULAR_CATEGORIES] });
+                            showToast('Mapped all categories to this project');
+                          }}
+                        >
+                          <Check size={12} />
+                          <span>Select All ({POPULAR_CATEGORIES.length})</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-toggle-pill"
+                          style={{ borderColor: 'rgba(255, 80, 80, 0.4)', color: '#FF7B7B' }}
+                          onClick={() => {
+                            setFormData({ ...formData, categories: [] });
+                            showToast('Cleared all mapped categories');
+                          }}
+                        >
+                          <X size={12} />
+                          <span>Clear All</span>
+                        </button>
                       </div>
                     </div>
 

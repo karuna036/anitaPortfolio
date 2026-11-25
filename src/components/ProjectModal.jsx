@@ -109,18 +109,20 @@ export default function ProjectModal({ project: initialProject, onClose }) {
   const filtered3D = categoryFilter === 'All'
     ? images3D
     : images3D.filter(img =>
+        (img.category || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
+        (img.room || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
         (img.desc || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
         (img.title || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
-        (img.room || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
         (img.badge || '').toLowerCase().includes(categoryFilter.toLowerCase())
       );
 
   const filtered2D = categoryFilter === 'All'
     ? images2D
     : images2D.filter(img =>
+        (img.category || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
+        (img.room || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
         (img.desc || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
         (img.title || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
-        (img.room || '').toLowerCase().includes(categoryFilter.toLowerCase()) ||
         (img.badge || '').toLowerCase().includes(categoryFilter.toLowerCase())
       );
 
@@ -797,10 +799,14 @@ export default function ProjectModal({ project: initialProject, onClose }) {
                 <div className="proview-matrix-grid">
                   {mappedCategories.map((cat, idx) => {
                     const count2D = images2D.filter(img =>
+                      (img.category || '').toLowerCase().includes(cat.toLowerCase()) ||
+                      (img.room || '').toLowerCase().includes(cat.toLowerCase()) ||
                       (img.desc || '').toLowerCase().includes(cat.toLowerCase()) ||
                       (img.title || '').toLowerCase().includes(cat.toLowerCase())
                     ).length;
                     const count3D = images3D.filter(img =>
+                      (img.category || '').toLowerCase().includes(cat.toLowerCase()) ||
+                      (img.room || '').toLowerCase().includes(cat.toLowerCase()) ||
                       (img.desc || '').toLowerCase().includes(cat.toLowerCase()) ||
                       (img.title || '').toLowerCase().includes(cat.toLowerCase())
                     ).length;

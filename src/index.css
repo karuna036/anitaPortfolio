@@ -6084,3 +6084,39 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-text-muted);
 }
 
+.project-card-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  font-size: 0.72rem;
+  color: var(--color-text-light);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.project-card-cat-chip:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.project-card-cat-chip.more {
+  background: rgba(201, 164, 116, 0.15);
+  border-color: rgba(201, 164, 116, 0.35);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.multi-space-badge {
+  background: rgba(18, 18, 22, 0.92) !important;
+  border: 1px solid var(--color-accent) !important;
+  color: #FAF6F0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  box-shadow: 0 2px 8px rgba(201, 164, 116, 0.25);
+}
+
+

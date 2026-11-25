@@ -475,6 +475,8 @@ export default function Portfolio({ onOpenAdmin }) {
                   ).length;
                   const isKitchen = (project.categories || []).some((c) => c.toLowerCase().includes('kitchen') || c.toLowerCase().includes('crockery'));
                   const isBedroom = (project.categories || []).some((c) => c.toLowerCase().includes('bedroom') || c.toLowerCase().includes('tv') || c.toLowerCase().includes('wardrobe'));
+                  const isLiving = (project.categories || []).some((c) => c.toLowerCase().includes('living') || c.toLowerCase().includes('dining') || c.toLowerCase().includes('vanity'));
+                  const isMultiCategory = (project.categories && project.categories.length > 2) || (isKitchen && (isBedroom || isLiving));
 
                   return (
                     <div
@@ -495,10 +497,17 @@ export default function Portfolio({ onOpenAdmin }) {
 
                         {/* Top Category Badge */}
                         <div className="project-top-badges">
-                          <span className={`project-badge ${isKitchen ? 'kitchen-badge' : isBedroom ? 'bedroom-badge' : ''}`}>
-                            {isKitchen ? '🍳 ' : isBedroom ? '🛏️ ' : ''}
-                            {project.categoryLabel || project.categories?.[0] || 'Design'}
-                          </span>
+                          {isMultiCategory ? (
+                            <span className="project-badge multi-space-badge">
+                              <Layers size={11} color="#C9A474" />
+                              <span>Multi-Category Suite ({project.categories?.length || 0})</span>
+                            </span>
+                          ) : (
+                            <span className={`project-badge ${isKitchen ? 'kitchen-badge' : isBedroom ? 'bedroom-badge' : ''}`}>
+                              {isKitchen ? '🍳 ' : isBedroom ? '🛏️ ' : ''}
+                              {project.categoryLabel || project.categories?.[0] || 'Design'}
+                            </span>
+                          )}
                         </div>
 
                         {/* Bottom 2D/3D Assets Pill */}
@@ -530,6 +539,25 @@ export default function Portfolio({ onOpenAdmin }) {
                       <div className="project-info">
                         <h3 className="project-title">{project.title}</h3>
                         <p className="project-desc-short">{project.description}</p>
+
+                        {/* Mapped Categories Row (One Project ➔ Multiple Categories) */}
+                        {project.categories && project.categories.length > 0 && (
+                          <div className="project-mapped-categories-row" style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', margin: '8px 0 10px 0' }}>
+                            <span style={{ fontSize: '0.70rem', color: 'var(--color-accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              Categories:
+                            </span>
+                            {project.categories.slice(0, 3).map((cat, idx) => (
+                              <span key={idx} className="project-card-cat-chip">
+                                {cat}
+                              </span>
+                            ))}
+                            {project.categories.length > 3 && (
+                              <span className="project-card-cat-chip more">
+                                +{project.categories.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
 
                         {/* Space Tabs Preview */}
                         {project.tabNames && project.tabNames.length > 0 && (
