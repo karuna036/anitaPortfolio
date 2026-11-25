@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpRight, Phone, MessageSquare, Lock } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Menu, X, ArrowUpRight, Phone, MessageSquare, Lock, Layers } from 'lucide-react';
 import { personalInfo } from '../data/portfolioData';
 
 export default function Navbar({ onOpenAdmin }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
@@ -37,22 +40,44 @@ export default function Navbar({ onOpenAdmin }) {
   }, []);
 
   const navLinks = [
+    { label: 'Projects', path: '/projects', isRoute: true },
     { label: 'About', href: '#about' },
     { label: 'Services', href: '#services' },
-    { label: 'Portfolio', href: '#portfolio' },
     { label: 'Skills', href: '#skills' },
     { label: 'Experience', href: '#experience' },
-    { label: 'Education', href: '#education' },
     { label: 'Contact', href: '#contact' },
   ];
 
-  const handleLinkClick = (e, href) => {
+  const handleLinkClick = (e, item) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    const target = document.querySelector(href);
+
+    if (item.isRoute) {
+      navigate(item.path);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const target = document.querySelector(item.href);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+      return;
+    }
+
+    const target = document.querySelector(item.href);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    navigate('/projects');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -60,22 +85,28 @@ export default function Navbar({ onOpenAdmin }) {
       <header className={`navbar-wrapper ${scrolled ? 'scrolled' : 'transparent'}`}>
         <div className="container">
           <div className="navbar-inner">
-            <a href="#home" className="brand-logo" onClick={(e) => handleLinkClick(e, '#home')}>
+            <a href="#home" className="brand-logo" onClick={handleLogoClick}>
               <span className="brand-name">Anitha Roselin S</span>
               <span className="brand-sub">Interior Designer · UAE</span>
             </a>
 
             <nav className="nav-links">
-              {navLinks.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className={`nav-item ${activeSection === item.href.slice(1) ? 'active' : ''}`}
-                  onClick={(e) => handleLinkClick(e, item.href)}
-                >
-                  {item.label}
-                </a>
-              ))}
+              {navLinks.map((item) => {
+                const isActive = item.isRoute
+                  ? location.pathname.startsWith('/project')
+                  : activeSection === item.href?.slice(1);
+
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href || item.path}
+                    className={`nav-item ${isActive ? 'active' : ''}`}
+                    onClick={(e) => handleLinkClick(e, item)}
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
             </nav>
 
             <div className="nav-cta-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -139,9 +170,9 @@ export default function Navbar({ onOpenAdmin }) {
           {navLinks.map((item) => (
             <a
               key={item.label}
-              href={item.href}
+              href={item.href || item.path}
               className="mobile-nav-link"
-              onClick={(e) => handleLinkClick(e, item.href)}
+              onClick={(e) => handleLinkClick(e, item)}
             >
               <span>{item.label}</span>
               <ArrowUpRight size={18} color="var(--color-accent)" />

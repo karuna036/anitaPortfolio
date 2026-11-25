@@ -1,8 +1,11 @@
 import React from 'react';
-import { ArrowDownRight, Sparkles, MapPin, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowDownRight, Sparkles, MapPin, ArrowRight, Layers } from 'lucide-react';
 import { personalInfo, stats } from '../data/portfolioData';
 
 export default function Hero() {
+  const navigate = useNavigate();
+
   const scrollTo = (id) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -49,11 +52,14 @@ export default function Hero() {
 
           <div className="hero-actions">
             <button
-              onClick={() => scrollTo('portfolio')}
+              onClick={() => {
+                navigate('/projects');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className="btn-primary"
             >
-              <span>View My Portfolio</span>
-              <ArrowDownRight size={18} />
+              <span>Explore Projects Flow</span>
+              <Layers size={18} />
             </button>
 
             <button

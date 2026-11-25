@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Maximize2,
   Sparkles,
@@ -95,6 +96,7 @@ const FEATURED_CATEGORIES = [
 ];
 
 export default function Portfolio({ onOpenAdmin }) {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedProject, setSelectedProject] = useState(null);
   const [projects, setProjects] = useState(getStoredProjects());
@@ -240,6 +242,31 @@ export default function Portfolio({ onOpenAdmin }) {
           <p className="section-subtitle">
             Explore turnkey architectural layouts, millimeter-accurate 2D CAD fabrication elevations, and photorealistic 3D CGI renders curated by space and room function.
           </p>
+
+          {/* Dynamic 3-Step Flow Banner */}
+          <div className="flow-teaser-banner">
+            <div className="flow-teaser-left">
+              <div className="flow-teaser-badge">
+                <Sparkles size={13} color="#C9A474" />
+                <span>Multi-Category Architecture Flow</span>
+              </div>
+              <h3 className="flow-teaser-title">Project → Multiple Categories → 2D &amp; 3D Images</h3>
+              <p className="flow-teaser-desc">
+                Experience our dynamic portfolio system. Explore luxury projects mapped with multiple room categories (Living Room, Kitchen, Master Bedroom, TV Unit, Wardrobe, Cinema Room, Bathroom), 2D CAD fabrication plans, and 3D CGI renders.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                navigate('/projects');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <span>Explore All Projects</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
 
           {/* View Mode Switcher */}
           <div className="project-view-mode-bar">
