@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronRight,
@@ -16,10 +16,19 @@ import { getInteriorProjectById } from '../../data/interiorProjectsData';
 export default function ProjectCategoriesPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const [projectVersion, setProjectVersion] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setProjectVersion((v) => v + 1);
+    };
+    window.addEventListener('interior_projects_updated', handleUpdate);
+    return () => window.removeEventListener('interior_projects_updated', handleUpdate);
+  }, []);
 
   const project = useMemo(() => {
     return getInteriorProjectById(projectId);
-  }, [projectId]);
+  }, [projectId, projectVersion]);
 
   if (!project) {
     return (

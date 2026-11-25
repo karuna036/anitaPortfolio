@@ -21,14 +21,23 @@ export default function CategoryGalleryPage() {
 
   const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL' | '3D' | '2D' | 'LAYOUT' | 'BEFORE_AFTER'
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setVersion((v) => v + 1);
+    };
+    window.addEventListener('interior_projects_updated', handleUpdate);
+    return () => window.removeEventListener('interior_projects_updated', handleUpdate);
+  }, []);
 
   const project = useMemo(() => {
     return getInteriorProjectById(projectId);
-  }, [projectId]);
+  }, [projectId, version]);
 
   const category = useMemo(() => {
     return getCategoryByProjectAndId(projectId, categoryId);
-  }, [projectId, categoryId]);
+  }, [projectId, categoryId, version]);
 
   if (!project || !category) {
     return (

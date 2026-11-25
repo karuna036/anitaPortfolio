@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
@@ -16,10 +16,17 @@ import { getAllInteriorProjects } from '../../data/interiorProjectsData';
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const [projects, setProjects] = useState(() => getAllInteriorProjects());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilterCategory, setSelectedFilterCategory] = useState('All');
 
-  const projects = getAllInteriorProjects();
+  useEffect(() => {
+    const handleUpdate = () => {
+      setProjects(getAllInteriorProjects());
+    };
+    window.addEventListener('interior_projects_updated', handleUpdate);
+    return () => window.removeEventListener('interior_projects_updated', handleUpdate);
+  }, []);
 
   // Extract all unique category names across all projects
   const allCategoryNames = useMemo(() => {

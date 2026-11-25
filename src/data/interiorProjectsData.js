@@ -694,19 +694,244 @@ export const interiorProjects = [
   }
 ];
 
-// Helper to retrieve all projects
+// Storage Key for LocalStorage Persistence
+const STORAGE_INTERIOR_KEY = 'anitha_interior_flow_projects_v2';
+
+/**
+ * Retrieve all projects from localStorage (or initialize with defaults)
+ */
 export function getAllInteriorProjects() {
-  return interiorProjects;
+  if (typeof window === 'undefined') return interiorProjects;
+  try {
+    const stored = localStorage.getItem(STORAGE_INTERIOR_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to parse interior projects from storage, using defaults:', err);
+  }
+
+  // Initialize storage with defaults
+  try {
+    const clone = JSON.parse(JSON.stringify(interiorProjects));
+    localStorage.setItem(STORAGE_INTERIOR_KEY, JSON.stringify(clone));
+    return clone;
+  } catch (e) {
+    return interiorProjects;
+  }
 }
 
-// Helper to retrieve single project by ID
+/**
+ * Retrieve single project by ID
+ */
 export function getInteriorProjectById(projectId) {
-  return interiorProjects.find((p) => p.id === projectId) || null;
+  if (!projectId) return null;
+  const list = getAllInteriorProjects();
+  const cleanId = String(projectId).trim().toLowerCase();
+  return list.find((p) => String(p.id).trim().toLowerCase() === cleanId) || null;
 }
 
-// Helper to retrieve category by project ID and category ID
+/**
+ * Retrieve category by project ID and category ID
+ */
 export function getCategoryByProjectAndId(projectId, categoryId) {
   const project = getInteriorProjectById(projectId);
-  if (!project) return null;
-  return project.categories.find((c) => c.id === categoryId) || null;
+  if (!project || !project.categories) return null;
+  const cleanCatId = String(categoryId).trim().toLowerCase();
+  return project.categories.find((c) => String(c.id).trim().toLowerCase() === cleanCatId) || null;
 }
+
+/**
+ * Persist projects list to localStorage and dispatch update event
+ */
+export function saveInteriorProjects(projectsList) {
+  try {
+    localStorage.setItem(STORAGE_INTERIOR_KEY, JSON.stringify(projectsList));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('interior_projects_updated'));
+    }
+    return true;
+  } catch (err) {
+    console.error('Error saving interior projects:', err);
+    return false;
+  }
+}
+
+/**
+ * Helper to slugify strings into clean IDs
+ */
+export function slugify(text) {
+  return (text || '')
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-');
+}
+
+/**
+ * FORM 1: Create a new project (First CRUD)
+ */
+export function createInteriorProject(projectData) {
+  const list = getAllInteriorProjects();
+  const baseId = slugify(projectData.title) || `project-${Date.now()}`;
+  let finalId = baseId;
+  let counter = 1;
+  while (list.some((p) => p.id === finalId)) {
+    finalId = `${baseId}-${counter}`;
+    counter++;
+  }
+
+  const newProject = {
+    id: finalId,
+    title: projectData.title || 'Untitled Project',
+    location: projectData.location || 'Location Not Specified',
+    year: projectData.year || new Date().getFullYear().toString(),
+    area: projectData.area || '',
+    client: projectData.client || 'Private Client',
+    description: projectData.description || '',
+    coverImage: projectData.coverImage || '/assets/kitchen-3d-render-1.jpg',
+    categories: projectData.categories || [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  const updated = [newProject, ...list];
+  saveInteriorProjects(updated);
+  return newProject;
+}
+
+/**
+ * FORM 1: Update an existing project
+ */
+export function updateInteriorProject(projectId, updatedFields) {
+  const list = getAllInteriorProjects();
+  const cleanId = String(projectId).trim().toLowerCase();
+  const index = list.findIndex((p) => String(p.id).trim().toLowerCase() === cleanId);
+  if (index === -1) return null;
+
+  list[index] = {
+    ...list[index],
+    ...updatedFields,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveInteriorProjects(list);
+  return list[index];
+}
+
+/**
+ * FORM 1: Delete a project
+ */
+export function deleteInteriorProject(projectId) {
+  const list = getAllInteriorProjects();
+  const cleanId = String(projectId).trim().toLowerCase();
+  const filtered = list.filter((p) => String(p.id).trim().toLowerCase() !== cleanId);
+  saveInteriorProjects(filtered);
+  return filtered;
+}
+
+/**
+ * FORM 2: Save / Map Category with multiple 2D and 3D images to a project (Second Form)
+ */
+export function saveCategoryWithImages(projectId, categoryData) {
+  const list = getAllInteriorProjects();
+  const cleanId = String(projectId).trim().toLowerCase();
+  const projectIndex = list.findIndex((p) => String(p.id).trim().toLowerCase() === cleanId);
+  if (projectIndex === -1) return null;
+
+  const project = list[projectIndex];
+  const categories = project.categories ? [...project.categories] : [];
+
+  const catBaseId = slugify(categoryData.name) || `cat-${Date.now()}`;
+  const targetCatId = categoryData.id || catBaseId;
+
+  const catIndex = categories.findIndex((c) => String(c.id).trim().toLowerCase() === String(targetCatId).trim().toLowerCase());
+
+  // Formatted category object
+  const formattedCategory = {
+    id: targetCatId,
+    name: categoryData.name || 'New Category',
+    icon: categoryData.icon || '🏠',
+    coverImage: categoryData.coverImage || (categoryData.images && categoryData.images[0]?.src) || '/assets/kitchen-3d-render-1.jpg',
+    description: categoryData.description || '',
+    dimensions: categoryData.dimensions || '',
+    images: Array.isArray(categoryData.images) ? categoryData.images : []
+  };
+
+  if (catIndex >= 0) {
+    // Update existing category
+    categories[catIndex] = formattedCategory;
+  } else {
+    // Add new category to project
+    categories.push(formattedCategory);
+  }
+
+  list[projectIndex] = {
+    ...project,
+    categories,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveInteriorProjects(list);
+  return list[projectIndex];
+}
+
+/**
+ * FORM 2: Delete a category from a project
+ */
+export function deleteCategoryFromProject(projectId, categoryId) {
+  const list = getAllInteriorProjects();
+  const cleanId = String(projectId).trim().toLowerCase();
+  const projectIndex = list.findIndex((p) => String(p.id).trim().toLowerCase() === cleanId);
+  if (projectIndex === -1) return null;
+
+  const project = list[projectIndex];
+  const cleanCatId = String(categoryId).trim().toLowerCase();
+  const filteredCategories = (project.categories || []).filter(
+    (c) => String(c.id).trim().toLowerCase() !== cleanCatId
+  );
+
+  list[projectIndex] = {
+    ...project,
+    categories: filteredCategories,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveInteriorProjects(list);
+  return list[projectIndex];
+}
+
+/**
+ * Reset all interior projects back to original built-in defaults
+ */
+export function resetInteriorProjectsToDefault() {
+  try {
+    const clone = JSON.parse(JSON.stringify(interiorProjects));
+    localStorage.setItem(STORAGE_INTERIOR_KEY, JSON.stringify(clone));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('interior_projects_updated'));
+    }
+    return clone;
+  } catch (err) {
+    console.error('Failed to reset interior projects:', err);
+    return interiorProjects;
+  }
+}
+
+/**
+ * Utility to convert uploaded file into base64 Data URL
+ */
+export function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
