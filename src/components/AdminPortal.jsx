@@ -238,6 +238,14 @@ export default function AdminPortal({ onClose }) {
     desc: ''
   });
 
+  // Batch Multi-Upload State
+  const [isBatchUploading2D, setIsBatchUploading2D] = useState(false);
+  const [isBatchUploading3D, setIsBatchUploading3D] = useState(false);
+  const [isMultipleUrlOpen2D, setIsMultipleUrlOpen2D] = useState(false);
+  const [isMultipleUrlOpen3D, setIsMultipleUrlOpen3D] = useState(false);
+  const [multipleUrlsInput2D, setMultipleUrlsInput2D] = useState('');
+  const [multipleUrlsInput3D, setMultipleUrlsInput3D] = useState('');
+
   // Refresh projects when updated
   const refreshProjects = () => {
     const list = getAllInteriorProjects();
@@ -502,6 +510,195 @@ export default function AdminPortal({ onClose }) {
       desc: ''
     });
     showToast('success', '2D Image added to mapping list. Remember to click "Save Category" to persist!');
+  };
+
+  // Helper to format clean title from filename
+  const formatTitleFromFilename = (filename, prefix = '') => {
+    if (!filename) return prefix || 'Drawing Plan';
+    const base = filename.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim();
+    const title = base.replace(/\b\w/g, (c) => c.toUpperCase());
+    return prefix ? `${prefix} – ${title}` : title;
+  };
+
+  // 1. Batch Upload Multiple 2D CAD Drawings
+  const handleMultiple2DUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setIsBatchUploading2D(true);
+    try {
+      const converted = await Promise.all(
+        files.map(async (file, idx) => {
+          const base64 = await fileToBase64(file);
+          return {
+            id: `img-2d-${Date.now()}-${idx}-${Math.floor(Math.random() * 1000)}`,
+            type: '2D',
+            subType: '2D CAD Layout',
+            title: formatTitleFromFilename(file.name, categoryFormData.name),
+            src: base64,
+            dimensions: categoryFormData.dimensions || '1:20 Metric Scale',
+            desc: `Architectural 2D fabrication drawing (${file.name}).`
+          };
+        })
+      );
+
+      setMapped2DImages((prev) => [...prev, ...converted]);
+      showToast('success', `Successfully uploaded ${converted.length} 2D CAD drawings! Click "Save Category" to persist.`);
+    } catch (err) {
+      showToast('error', 'Error reading some 2D files. Please check file format.');
+    } finally {
+      setIsBatchUploading2D(false);
+      e.target.value = '';
+    }
+  };
+
+  // 2. Batch Upload Multiple 3D CGI Renders
+  const handleMultiple3DUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setIsBatchUploading3D(true);
+    try {
+      const converted = await Promise.all(
+        files.map(async (file, idx) => {
+          const base64 = await fileToBase64(file);
+          return {
+            id: `img-3d-${Date.now()}-${idx}-${Math.floor(Math.random() * 1000)}`,
+            type: '3D',
+            subType: '3D Photorealistic Render',
+            title: formatTitleFromFilename(file.name, categoryFormData.name),
+            src: base64,
+            dimensions: 'Photorealistic CGI',
+            desc: `Photorealistic 3D interior design visualization render (${file.name}).`
+          };
+        })
+      );
+
+      setMapped3DImages((prev) => [...prev, ...converted]);
+      showToast('success', `Successfully uploaded ${converted.length} 3D CGI renders! Click "Save Category" to persist.`);
+    } catch (err) {
+      showToast('error', 'Error reading some 3D files. Please check file format.');
+    } finally {
+      setIsBatchUploading3D(false);
+      e.target.value = '';
+    }
+  };
+
+  // 3. Batch Add 2D URLs
+  const handleAddMultipleUrls2D = (e) => {
+    e.preventDefault();
+    const lines = multipleUrlsInput2D
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    if (lines.length === 0) {
+      showToast('error', 'Please enter at least one image URL.');
+      return;
+    }
+
+    const newItems = lines.map((url, idx) => ({
+      id: `img-2d-url-${Date.now()}-${idx}`,
+      type: '2D',
+      subType: '2D CAD Layout',
+      title: `${categoryFormData.name} 2D CAD Plan #${mapped2DImages.length + idx + 1}`,
+      src: url,
+      dimensions: categoryFormData.dimensions || '1:20 Metric Scale',
+      desc: 'Architectural 2D CAD fabrication drawing from URL.'
+    }));
+
+    setMapped2DImages((prev) => [...prev, ...newItems]);
+    setMultipleUrlsInput2D('');
+    setIsMultipleUrlOpen2D(false);
+    showToast('success', `Added ${newItems.length} 2D CAD URLs to category!`);
+  };
+
+  // 4. Batch Add 3D URLs
+  const handleAddMultipleUrls3D = (e) => {
+    e.preventDefault();
+    const lines = multipleUrlsInput3D
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    if (lines.length === 0) {
+      showToast('error', 'Please enter at least one image URL.');
+      return;
+    }
+
+    const newItems = lines.map((url, idx) => ({
+      id: `img-3d-url-${Date.now()}-${idx}`,
+      type: '3D',
+      subType: '3D Photorealistic Render',
+      title: `${categoryFormData.name} 3D CGI Render #${mapped3DImages.length + idx + 1}`,
+      src: url,
+      dimensions: 'Photorealistic CGI',
+      desc: 'Photorealistic 3D interior design visualization render from URL.'
+    }));
+
+    setMapped3DImages((prev) => [...prev, ...newItems]);
+    setMultipleUrlsInput3D('');
+    setIsMultipleUrlOpen3D(false);
+    showToast('success', `Added ${newItems.length} 3D render URLs to category!`);
+  };
+
+  // 5. One-click Map All Preset CAD
+  const handleMapAllPresetCAD = () => {
+    const newItems = PRESET_2D_ASSETS.map((p, idx) => ({
+      id: `img-2d-preset-${Date.now()}-${idx}`,
+      type: '2D',
+      subType: p.subType,
+      title: `${categoryFormData.name} – ${p.title}`,
+      src: p.src,
+      dimensions: p.dimensions,
+      desc: p.desc
+    }));
+    setMapped2DImages((prev) => [...prev, ...newItems]);
+    showToast('success', `Mapped all ${newItems.length} Studio CAD Sheets to ${categoryFormData.name}!`);
+  };
+
+  // 6. One-click Map All Preset 3D
+  const handleMapAllPreset3D = () => {
+    const newItems = PRESET_3D_ASSETS.map((p, idx) => ({
+      id: `img-3d-preset-${Date.now()}-${idx}`,
+      type: '3D',
+      subType: p.subType,
+      title: `${categoryFormData.name} – ${p.title}`,
+      src: p.src,
+      dimensions: p.dimensions,
+      desc: p.desc
+    }));
+    setMapped3DImages((prev) => [...prev, ...newItems]);
+    showToast('success', `Mapped all ${newItems.length} Studio 3D Renders to ${categoryFormData.name}!`);
+  };
+
+  // 7. Clear All 2D
+  const handleClearAll2D = () => {
+    if (window.confirm(`Clear all ${mapped2DImages.length} 2D CAD drawings from this category?`)) {
+      setMapped2DImages([]);
+      showToast('info', 'All 2D drawings cleared.');
+    }
+  };
+
+  // 8. Clear All 3D
+  const handleClearAll3D = () => {
+    if (window.confirm(`Clear all ${mapped3DImages.length} 3D CGI renders from this category?`)) {
+      setMapped3DImages([]);
+      showToast('info', 'All 3D renders cleared.');
+    }
+  };
+
+  // 9. Inline item update
+  const handleUpdate2DItem = (imgId, field, value) => {
+    setMapped2DImages((prev) =>
+      prev.map((img) => (img.id === imgId ? { ...img, [field]: value } : img))
+    );
+  };
+
+  const handleUpdate3DItem = (imgId, field, value) => {
+    setMapped3DImages((prev) =>
+      prev.map((img) => (img.id === imgId ? { ...img, [field]: value } : img))
+    );
   };
 
   // Remove 2D Image
@@ -1377,10 +1574,10 @@ export default function AdminPortal({ onClose }) {
               </div>
             </div>
 
-            {/* STEP 3 & 4: MAPPING 2D AND 3D IMAGES TO THIS CATEGORY */}
+            {/* STEP 3 & 4: MAPPING MULTIPLE 2D AND 3D IMAGES TO THIS CATEGORY */}
             <div className="images-mapping-dual-columns">
               {/* ============================================================= */}
-              {/* LEFT COLUMN: 2D IMAGES MAPPING (CAD WORKING DRAWINGS & PLANS) */}
+              {/* LEFT COLUMN: MULTIPLE 2D CAD IMAGES MAPPING & BATCH UPLOAD    */}
               {/* ============================================================= */}
               <div className="images-mapping-column cad-column">
                 <div className="column-header">
@@ -1388,7 +1585,80 @@ export default function AdminPortal({ onClose }) {
                     <Compass size={15} />
                     <span>2D Architectural CAD Plans ({mapped2DImages.length})</span>
                   </div>
-                  <span className="col-helper">Floor plans, fabrication elevations &amp; layouts</span>
+                  {mapped2DImages.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn-clear-column"
+                      onClick={handleClearAll2D}
+                      title="Clear all 2D images"
+                    >
+                      <Trash2 size={13} />
+                      <span>Clear All 2D</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* HERO MULTI-UPLOAD DROPZONE (PRIMARY FEATURE) */}
+                <div className="batch-upload-hero-card cad">
+                  <div className="batch-dropzone-inner">
+                    <div className="batch-icon-ring cad">
+                      <Compass size={28} color="#82b4ff" />
+                    </div>
+                    <div className="batch-text-col">
+                      <h4 className="batch-main-label">Batch Upload Multiple 2D CAD Drawings</h4>
+                      <p className="batch-sub-label">Select 2, 5, 10+ CAD floor plans, elevations, or joinery sheets at once (PNG, JPG, WebP)</p>
+                    </div>
+
+                    <label className={`btn-batch-upload cad ${isBatchUploading2D ? 'uploading' : ''}`}>
+                      <Upload size={16} />
+                      <span>{isBatchUploading2D ? 'Processing CAD Files...' : 'Browse & Upload Multiple 2D CAD'}</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleMultiple2DUpload}
+                        disabled={isBatchUploading2D}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Batch Tools Bar: Presets & Multi-URL */}
+                  <div className="batch-quick-tools-row">
+                    <button
+                      type="button"
+                      className="preset-batch-btn cad"
+                      onClick={handleMapAllPresetCAD}
+                      title="Instantly add all 6 technical CAD sheets to this category"
+                    >
+                      <Plus size={13} />
+                      <span>+ Add All 6 Studio CAD Sheets</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="toggle-urls-btn"
+                      onClick={() => setIsMultipleUrlOpen2D(!isMultipleUrlOpen2D)}
+                    >
+                      <span>{isMultipleUrlOpen2D ? 'Hide Multi-URL' : '+ Paste Multiple URLs'}</span>
+                    </button>
+                  </div>
+
+                  {/* Multi-URL Input Drawer */}
+                  {isMultipleUrlOpen2D && (
+                    <form onSubmit={handleAddMultipleUrls2D} className="batch-urls-form">
+                      <label className="batch-url-label">Paste multiple 2D image URLs (one per line):</label>
+                      <textarea
+                        rows={3}
+                        placeholder="https://example.com/cad-plan-1.png&#10;https://example.com/cad-elevation-2.png"
+                        value={multipleUrlsInput2D}
+                        onChange={(e) => setMultipleUrlsInput2D(e.target.value)}
+                      />
+                      <button type="submit" className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.78rem', alignSelf: 'flex-start' }}>
+                        <span>Add These 2D URLs</span>
+                      </button>
+                    </form>
+                  )}
                 </div>
 
                 {/* List of Currently Mapped 2D Images */}
@@ -1396,24 +1666,42 @@ export default function AdminPortal({ onClose }) {
                   {mapped2DImages.length === 0 ? (
                     <div className="empty-assets-box">
                       <Compass size={28} color="#82b4ff" />
-                      <p>No 2D CAD drawings mapped to this category yet.</p>
-                      <small>Add drawings below or pick from Studio CAD presets.</small>
+                      <p>No 2D CAD drawings mapped yet.</p>
+                      <small>Click "Browse &amp; Upload Multiple 2D CAD" above or "+ Add All 6 Studio CAD Sheets".</small>
                     </div>
                   ) : (
                     mapped2DImages.map((img, idx) => (
                       <div key={img.id || idx} className="mapped-image-card cad-card">
                         <img src={img.src} alt={img.title} className="thumb" />
                         <div className="info">
-                          <span className="type-badge cad">{img.subType || '2D CAD'}</span>
-                          <h4 className="title">{img.title}</h4>
-                          <span className="dim">{img.dimensions || 'Metric Scale'}</span>
+                          <div className="card-top-inputs">
+                            <input
+                              type="text"
+                              className="inline-title-input"
+                              value={img.title}
+                              onChange={(e) => handleUpdate2DItem(img.id, 'title', e.target.value)}
+                              placeholder="Drawing Title"
+                            />
+                            <select
+                              className="inline-subtype-select cad"
+                              value={img.subType || '2D CAD Layout'}
+                              onChange={(e) => handleUpdate2DItem(img.id, 'subType', e.target.value)}
+                            >
+                              <option value="2D CAD Layout">2D CAD Layout</option>
+                              <option value="Floor Plan">Floor Plan</option>
+                              <option value="Working Elevation">Working Elevation</option>
+                              <option value="Carcass Joinery">Carcass Joinery</option>
+                              <option value="Interior Layout">Interior Layout</option>
+                            </select>
+                          </div>
+                          <span className="dim">{img.dimensions || '1:20 Metric Scale'}</span>
                           <p className="desc">{img.desc}</p>
                         </div>
                         <button
                           type="button"
                           className="remove-img-btn"
                           onClick={() => handleRemove2DImage(img.id)}
-                          title="Remove 2D image from mapping"
+                          title="Remove this 2D drawing"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -1422,11 +1710,11 @@ export default function AdminPortal({ onClose }) {
                   )}
                 </div>
 
-                {/* Add New 2D Image Box */}
+                {/* Optional: Add Single 2D Image Box */}
                 <div className="add-image-subform cad-subform">
                   <h4 className="subform-title">
                     <Plus size={14} />
-                    <span>Map Another 2D CAD Image</span>
+                    <span>Or Add Single 2D CAD Image Manually</span>
                   </h4>
 
                   <div className="subform-fields">
@@ -1467,7 +1755,7 @@ export default function AdminPortal({ onClose }) {
                     </div>
 
                     <div className="form-group">
-                      <label>2D CAD File / Drawing Source</label>
+                      <label>2D CAD File / Image Source</label>
                       <div className="input-with-upload">
                         <input
                           type="text"
@@ -1477,7 +1765,7 @@ export default function AdminPortal({ onClose }) {
                         />
                         <label className="file-upload-label">
                           <Upload size={14} />
-                          <span>Upload CAD</span>
+                          <span>Upload File</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -1488,9 +1776,9 @@ export default function AdminPortal({ onClose }) {
                       </div>
                     </div>
 
-                    {/* Quick Studio 2D Presets */}
+                    {/* Quick Single Presets */}
                     <div className="quick-presets-strip">
-                      <span className="strip-title">Preset CAD Sheets:</span>
+                      <span className="strip-title">Single Preset:</span>
                       <div className="preset-buttons-row">
                         {PRESET_2D_ASSETS.map((p, idx) => (
                           <button
@@ -1513,30 +1801,20 @@ export default function AdminPortal({ onClose }) {
                       </div>
                     </div>
 
-                    <div className="form-group">
-                      <label>Technical Details / Fabrication Notes</label>
-                      <textarea
-                        rows={2}
-                        placeholder="Details on joinery, carcass specifications, hardware, tolerances, and finishes..."
-                        value={new2DImage.desc}
-                        onChange={(e) => setNew2DImage({ ...new2DImage, desc: e.target.value })}
-                      />
-                    </div>
-
                     <button
                       type="button"
                       className="btn-add-asset cad"
                       onClick={handleAdd2DImageToList}
                     >
                       <Plus size={15} />
-                      <span>+ Map 2D Image to Category</span>
+                      <span>+ Map Single 2D Image</span>
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* ============================================================= */}
-              {/* RIGHT COLUMN: 3D IMAGES MAPPING (CGI RENDERS & PERSPECTIVES)  */}
+              {/* RIGHT COLUMN: MULTIPLE 3D CGI RENDERS MAPPING & BATCH UPLOAD  */}
               {/* ============================================================= */}
               <div className="images-mapping-column render-column">
                 <div className="column-header">
@@ -1544,7 +1822,80 @@ export default function AdminPortal({ onClose }) {
                     <Sparkles size={15} />
                     <span>3D Photorealistic CGI Renders ({mapped3DImages.length})</span>
                   </div>
-                  <span className="col-helper">CGI perspectives, materials, &amp; before/after</span>
+                  {mapped3DImages.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn-clear-column"
+                      onClick={handleClearAll3D}
+                      title="Clear all 3D renders"
+                    >
+                      <Trash2 size={13} />
+                      <span>Clear All 3D</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* HERO MULTI-UPLOAD DROPZONE (PRIMARY FEATURE) */}
+                <div className="batch-upload-hero-card render">
+                  <div className="batch-dropzone-inner">
+                    <div className="batch-icon-ring render">
+                      <Sparkles size={28} color="#C9A474" />
+                    </div>
+                    <div className="batch-text-col">
+                      <h4 className="batch-main-label">Batch Upload Multiple 3D CGI Renders</h4>
+                      <p className="batch-sub-label">Select 2, 5, 10+ photorealistic renders, angles, or before/afters at once (PNG, JPG, WebP)</p>
+                    </div>
+
+                    <label className={`btn-batch-upload render ${isBatchUploading3D ? 'uploading' : ''}`}>
+                      <Upload size={16} />
+                      <span>{isBatchUploading3D ? 'Processing 3D Files...' : 'Browse & Upload Multiple 3D Renders'}</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleMultiple3DUpload}
+                        disabled={isBatchUploading3D}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Batch Tools Bar: Presets & Multi-URL */}
+                  <div className="batch-quick-tools-row">
+                    <button
+                      type="button"
+                      className="preset-batch-btn render"
+                      onClick={handleMapAllPreset3D}
+                      title="Instantly add all 8 photorealistic CGI renders to this category"
+                    >
+                      <Plus size={13} />
+                      <span>+ Add All 8 Studio 3D Renders</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="toggle-urls-btn"
+                      onClick={() => setIsMultipleUrlOpen3D(!isMultipleUrlOpen3D)}
+                    >
+                      <span>{isMultipleUrlOpen3D ? 'Hide Multi-URL' : '+ Paste Multiple URLs'}</span>
+                    </button>
+                  </div>
+
+                  {/* Multi-URL Input Drawer */}
+                  {isMultipleUrlOpen3D && (
+                    <form onSubmit={handleAddMultipleUrls3D} className="batch-urls-form">
+                      <label className="batch-url-label">Paste multiple 3D render URLs (one per line):</label>
+                      <textarea
+                        rows={3}
+                        placeholder="https://example.com/render-perspective-1.jpg&#10;https://example.com/render-wide-2.jpg"
+                        value={multipleUrlsInput3D}
+                        onChange={(e) => setMultipleUrlsInput3D(e.target.value)}
+                      />
+                      <button type="submit" className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.78rem', alignSelf: 'flex-start' }}>
+                        <span>Add These 3D URLs</span>
+                      </button>
+                    </form>
+                  )}
                 </div>
 
                 {/* List of Currently Mapped 3D Images */}
@@ -1552,16 +1903,34 @@ export default function AdminPortal({ onClose }) {
                   {mapped3DImages.length === 0 ? (
                     <div className="empty-assets-box">
                       <Sparkles size={28} color="#C9A474" />
-                      <p>No 3D CGI renders mapped to this category yet.</p>
-                      <small>Add renders below or pick from Studio 3D presets.</small>
+                      <p>No 3D CGI renders mapped yet.</p>
+                      <small>Click "Browse &amp; Upload Multiple 3D Renders" above or "+ Add All 8 Studio 3D Renders".</small>
                     </div>
                   ) : (
                     mapped3DImages.map((img, idx) => (
                       <div key={img.id || idx} className="mapped-image-card render-card">
                         <img src={img.src} alt={img.title} className="thumb" />
                         <div className="info">
-                          <span className="type-badge render">{img.subType || '3D Render'}</span>
-                          <h4 className="title">{img.title}</h4>
+                          <div className="card-top-inputs">
+                            <input
+                              type="text"
+                              className="inline-title-input"
+                              value={img.title}
+                              onChange={(e) => handleUpdate3DItem(img.id, 'title', e.target.value)}
+                              placeholder="Render Title"
+                            />
+                            <select
+                              className="inline-subtype-select render"
+                              value={img.subType || '3D Photorealistic Render'}
+                              onChange={(e) => handleUpdate3DItem(img.id, 'subType', e.target.value)}
+                            >
+                              <option value="3D Photorealistic Render">3D Photorealistic Render</option>
+                              <option value="CGI Perspective">CGI Perspective</option>
+                              <option value="Wide Angle">Wide Angle View</option>
+                              <option value="Before & After">Before &amp; After</option>
+                              <option value="Lighting Simulation">Lighting Simulation</option>
+                            </select>
+                          </div>
                           <span className="dim">{img.dimensions || 'Photorealistic CGI'}</span>
                           <p className="desc">{img.desc}</p>
                         </div>
@@ -1569,7 +1938,7 @@ export default function AdminPortal({ onClose }) {
                           type="button"
                           className="remove-img-btn"
                           onClick={() => handleRemove3DImage(img.id)}
-                          title="Remove 3D image from mapping"
+                          title="Remove this 3D render"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -1578,11 +1947,11 @@ export default function AdminPortal({ onClose }) {
                   )}
                 </div>
 
-                {/* Add New 3D Image Box */}
+                {/* Optional: Add Single 3D Image Box */}
                 <div className="add-image-subform render-subform">
                   <h4 className="subform-title">
                     <Plus size={14} />
-                    <span>Map Another 3D CGI Render</span>
+                    <span>Or Add Single 3D CGI Render Manually</span>
                   </h4>
 
                   <div className="subform-fields">
@@ -1623,7 +1992,7 @@ export default function AdminPortal({ onClose }) {
                     </div>
 
                     <div className="form-group">
-                      <label>3D Render Image Source</label>
+                      <label>3D Render File / Image Source</label>
                       <div className="input-with-upload">
                         <input
                           type="text"
@@ -1633,7 +2002,7 @@ export default function AdminPortal({ onClose }) {
                         />
                         <label className="file-upload-label">
                           <Upload size={14} />
-                          <span>Upload 3D</span>
+                          <span>Upload File</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -1644,9 +2013,9 @@ export default function AdminPortal({ onClose }) {
                       </div>
                     </div>
 
-                    {/* Quick Studio 3D Presets */}
+                    {/* Quick Single Presets */}
                     <div className="quick-presets-strip">
-                      <span className="strip-title">Preset 3D Renders:</span>
+                      <span className="strip-title">Single Preset:</span>
                       <div className="preset-buttons-row">
                         {PRESET_3D_ASSETS.map((p, idx) => (
                           <button
@@ -1669,23 +2038,13 @@ export default function AdminPortal({ onClose }) {
                       </div>
                     </div>
 
-                    <div className="form-group">
-                      <label>Design Finishing &amp; Illumination Notes</label>
-                      <textarea
-                        rows={2}
-                        placeholder="Material palette, lighting mood, textures, and color tones..."
-                        value={new3DImage.desc}
-                        onChange={(e) => setNew3DImage({ ...new3DImage, desc: e.target.value })}
-                      />
-                    </div>
-
                     <button
                       type="button"
                       className="btn-add-asset render"
                       onClick={handleAdd3DImageToList}
                     >
                       <Plus size={15} />
-                      <span>+ Map 3D Image to Category</span>
+                      <span>+ Map Single 3D Image</span>
                     </button>
                   </div>
                 </div>
