@@ -20,6 +20,7 @@ import {
   Search,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   Shield,
   Download,
   Copy,
@@ -206,6 +207,7 @@ export default function AdminPortal({ onClose }) {
   // Temporary inputs for array fields
   const [newTabNameInput, setNewTabNameInput] = useState('');
   const [newCategoryInput, setNewCategoryInput] = useState('');
+  const [newPaletteInput, setNewPaletteInput] = useState('');
 
   // Temporary item for adding 2D CAD sheet
   const [cadSheetForm, setCadSheetForm] = useState({
@@ -475,6 +477,141 @@ export default function AdminPortal({ onClose }) {
     }
   };
 
+  // Batch Upload Multiple 2D CAD Images
+  const handleBatchUpload2D = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const existing2d = formData.galleryImages.filter(
+      (g) => (g.type || '').includes('2D') || (g.badge || '').includes('2D')
+    );
+    let loadedCount = 0;
+    const newItems = [];
+
+    files.forEach((file, index) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Url = event.target?.result;
+        if (base64Url) {
+          const cleanName = file.name
+            .replace(/\.[^/.]+$/, '')
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+          const itemNum = existing2d.length + newItems.length + 1;
+          newItems.push({
+            id: `cad-2d-${Date.now()}-${index}`,
+            type: '2D Working CAD',
+            badge: `2D ${itemNum}`,
+            shortLabel: `2D Sheet ${itemNum}`,
+            title: cleanName.length > 3 ? cleanName : `CAD Sheet ${itemNum}: Technical Joinery Plan`,
+            src: base64Url,
+            desc: `Architectural 2D AutoCAD fabrication and joinery plan with detailed dimensions.`,
+            pdfFile: ''
+          });
+        }
+        loadedCount++;
+        if (loadedCount === files.length) {
+          setFormData((prev) => ({
+            ...prev,
+            isTechnicalCAD: true,
+            galleryImages: [...prev.galleryImages, ...newItems]
+          }));
+          showToast(`Successfully mapped ${newItems.length} 2D CAD images to project! Remember to click Save & Update.`, 'success');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  // Batch Upload Multiple 3D CGI Renders
+  const handleBatchUpload3D = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const existing3d = formData.galleryImages.filter(
+      (g) => (g.type || '').includes('3D') || (g.badge || '').includes('3D')
+    );
+    let loadedCount = 0;
+    const newItems = [];
+
+    files.forEach((file, index) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Url = event.target?.result;
+        if (base64Url) {
+          const cleanName = file.name
+            .replace(/\.[^/.]+$/, '')
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+          const itemNum = existing3d.length + newItems.length + 1;
+          newItems.push({
+            id: `render-3d-${Date.now()}-${index}`,
+            type: '3D CGI Render',
+            badge: `3D ${itemNum}`,
+            shortLabel: `3D View ${itemNum}`,
+            title: cleanName.length > 3 ? cleanName : `3D Photorealistic Render – View ${itemNum}`,
+            src: base64Url,
+            desc: `Photorealistic 3D visualization render detailing materials, textures, and illumination.`
+          });
+        }
+        loadedCount++;
+        if (loadedCount === files.length) {
+          setFormData((prev) => ({
+            ...prev,
+            has3DRenders: true,
+            galleryImages: [...prev.galleryImages, ...newItems]
+          }));
+          showToast(`Successfully mapped ${newItems.length} 3D CGI renders to project! Remember to click Save & Update.`, 'success');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  // Batch Extract All Pages from Architectural PDF into 2D CAD Sheets
+  const handleBatchExtractCadPdf = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    showToast(`Converting all pages of "${file.name}" to 2D CAD sheets...`, 'info');
+    try {
+      const pages = await convertPdfToImages(file, { scale: 2.0, format: 'image/png' });
+      if (pages.length > 0) {
+        const cleanTitle = file.name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
+        const existing2d = formData.galleryImages.filter(
+          (g) => (g.type || '').includes('2D') || (g.badge || '').includes('2D')
+        );
+        const newSheets = pages.map((page, idx) => {
+          const num = existing2d.length + idx + 1;
+          return {
+            id: `cad-2d-${Date.now()}-${idx}`,
+            type: '2D Working CAD',
+            badge: `2D ${num}`,
+            shortLabel: `2D Sheet ${num}`,
+            title: `${cleanTitle} – Page ${page.pageNumber} (2D CAD)`,
+            src: page.dataUrl,
+            desc: `High-resolution 2D CAD elevation & joinery plan converted directly from ${file.name} (Page ${page.pageNumber}).`,
+            pdfFile: file.name
+          };
+        });
+
+        setFormData((prev) => ({
+          ...prev,
+          isTechnicalCAD: true,
+          galleryImages: [...prev.galleryImages, ...newSheets]
+        }));
+        showToast(`Extracted all ${pages.length} pages as 2D CAD sheets! Click "Save & Update" to persist.`, 'success');
+      }
+    } catch (err) {
+      showToast(`Error converting PDF: ${err.message}`, 'error');
+    }
+    e.target.value = '';
+  };
+
   // Open Create Form
   const handleOpenCreate = () => {
     setEditingProjectId(null);
@@ -549,11 +686,18 @@ export default function AdminPortal({ onClose }) {
     setShowResetConfirm(false);
   };
 
-  // Save Project Form
+  // Save Project Form (Saves all 5 steps together)
   const handleSaveForm = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!formData.title.trim()) {
       showToast('Project title is required!', 'error');
+      setActiveFormTab('basic');
+      return;
+    }
+
+    if (!formData.categories || formData.categories.length === 0) {
+      showToast('Please map at least one category to this project!', 'error');
+      setActiveFormTab('categories');
       return;
     }
 
@@ -562,26 +706,28 @@ export default function AdminPortal({ onClose }) {
       primaryImage = formData.galleryImages[0].src;
     }
     if (!primaryImage) {
-      primaryImage = 'https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=1000&q=80';
+      primaryImage = '/assets/kitchen-3d-render-1.jpg';
     }
 
-    const has2D = formData.galleryImages.some(img => (img.type || '').toLowerCase().includes('2d') || (img.badge || '').includes('2D'));
-    const has3D = formData.galleryImages.some(img => (img.type || '').toLowerCase().includes('3d') || (img.badge || '').includes('3D'));
+    const cadCount = formData.galleryImages.filter(img => (img.type || '').toLowerCase().includes('2d') || (img.badge || '').includes('2D')).length;
+    const renderCount = formData.galleryImages.filter(img => (img.type || '').toLowerCase().includes('3d') || (img.badge || '').includes('3D')).length;
 
     const projectToSave = {
       ...formData,
       image: primaryImage,
-      has3DRenders: has3D,
-      isTechnicalCAD: has2D,
-      categoryLabel: formData.categoryLabel || `${formData.categories[0] || 'Design'} · Plans & Renders`
+      has3DRenders: renderCount > 0,
+      isTechnicalCAD: cadCount > 0,
+      tabNames: formData.tabNames && formData.tabNames.length > 0 ? formData.tabNames : [formData.categories[0] || 'Main'],
+      categoryLabel: formData.categoryLabel || `${formData.categories[0] || 'Design'} · Plans & Renders`,
+      updatedAt: new Date().toISOString()
     };
 
     if (editingProjectId) {
       updateProject(editingProjectId, projectToSave);
-      showToast(`Updated project: "${projectToSave.title}" with ${formData.galleryImages.length} images!`);
+      showToast(`Updated "${projectToSave.title}" with ${formData.categories.length} categories, ${cadCount} CAD sheets & ${renderCount} 3D renders!`, 'success');
     } else {
       createProject(projectToSave);
-      showToast(`Added new project: "${projectToSave.title}"`);
+      showToast(`Created project "${projectToSave.title}" mapped to ${formData.categories.length} categories!`, 'success');
     }
 
     setIsFormOpen(false);
@@ -1602,24 +1748,24 @@ export default function AdminPortal({ onClose }) {
               </div>
             </div>
 
-            {/* Sub Tabs Inside Form */}
+            {/* 5-Step Process Tabs Inside Form */}
             <div className="admin-form-tabs">
               <button
                 className={`form-tab-btn ${activeFormTab === 'basic' ? 'active' : ''}`}
                 onClick={() => setActiveFormTab('basic')}
                 type="button"
               >
-                <FileText size={16} />
-                <span>1. Basic Information</span>
+                <FileText size={15} />
+                <span>1. Project Identity</span>
               </button>
 
               <button
-                className={`form-tab-btn ${activeFormTab === 'tabs' ? 'active' : ''}`}
-                onClick={() => setActiveFormTab('tabs')}
+                className={`form-tab-btn ${activeFormTab === 'categories' ? 'active' : ''}`}
+                onClick={() => setActiveFormTab('categories')}
                 type="button"
               >
-                <Layers size={16} />
-                <span>2. Tab Names &amp; Spaces ({formData.tabNames?.length || 0})</span>
+                <Layers size={15} />
+                <span>2. Multiple Categories ({formData.categories?.length || 0})</span>
               </button>
 
               <button
@@ -1627,8 +1773,8 @@ export default function AdminPortal({ onClose }) {
                 onClick={() => setActiveFormTab('2d')}
                 type="button"
               >
-                <Compass size={16} />
-                <span>3. 2D CAD Designs ({formData.galleryImages?.filter(g => (g.type || '').includes('2D') || (g.badge || '').includes('2D')).length})</span>
+                <Compass size={15} />
+                <span>3. 2D CAD Images ({formData.galleryImages?.filter(g => (g.type || '').includes('2D') || (g.badge || '').includes('2D')).length})</span>
               </button>
 
               <button
@@ -1636,21 +1782,40 @@ export default function AdminPortal({ onClose }) {
                 onClick={() => setActiveFormTab('3d')}
                 type="button"
               >
-                <Sparkles size={16} />
-                <span>4. 3D CGI Renders ({formData.galleryImages?.filter(g => (g.type || '').includes('3D') || (g.badge || '').includes('3D')).length})</span>
+                <Sparkles size={15} />
+                <span>4. 3D CGI Images ({formData.galleryImages?.filter(g => (g.type || '').includes('3D') || (g.badge || '').includes('3D')).length})</span>
+              </button>
+
+              <button
+                className={`form-tab-btn ${activeFormTab === 'descriptions' ? 'active' : ''}`}
+                onClick={() => setActiveFormTab('descriptions')}
+                type="button"
+              >
+                <Sliders size={15} />
+                <span>5. Descriptions &amp; Specs</span>
               </button>
             </div>
 
             <form onSubmit={handleSaveForm} className="admin-form-content">
-              {/* Tab 1: Basic Info */}
+              {/* ========================================================================= */}
+              {/* STEP 1: PROJECT IDENTITY (TITLE, SCOPE, PRIMARY COVER IMAGE)              */}
+              {/* ========================================================================= */}
               {activeFormTab === 'basic' && (
                 <div className="form-tab-pane">
-                  <div className="form-grid-2">
+                  <div className="form-info-callout">
+                    <FileText size={20} color="#C9A474" />
+                    <div>
+                      <strong>Step 1: Project Identity &amp; Cover</strong>
+                      <p>Set the project title, primary cover presentation image, scope, and CAD software tools.</p>
+                    </div>
+                  </div>
+
+                  <div className="form-grid-2" style={{ marginTop: '16px' }}>
                     <div className="admin-input-group">
                       <label>Project Title *</label>
                       <input
                         type="text"
-                        placeholder="e.g. Project 5: Contemporary Master Bedroom Suite & TV Unit"
+                        placeholder="e.g. Project 1: L-Shaped Modular Kitchen (3D Visualization & 2D CAD)"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         required
@@ -1658,101 +1823,19 @@ export default function AdminPortal({ onClose }) {
                     </div>
 
                     <div className="admin-input-group">
-                      <label>Category Label (Hero Tag)</label>
+                      <label>Scope of Work Deliverables</label>
                       <input
                         type="text"
-                        placeholder="e.g. Master Bedroom · 3D Renders & 2D CAD"
-                        value={formData.categoryLabel}
-                        onChange={(e) => setFormData({ ...formData, categoryLabel: e.target.value })}
+                        placeholder="e.g. 3D photorealistic visualization, 2D floor planning, carcass joinery detailing"
+                        value={formData.scope}
+                        onChange={(e) => setFormData({ ...formData, scope: e.target.value })}
                       />
-                    </div>
-                  </div>
-
-                  <div className="admin-input-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <label style={{ margin: 0 }}>Categories (Select or add tags for filters)</label>
-                      <span className="file-hint">Click pills to quickly toggle</span>
-                    </div>
-
-                    {/* Quick Select Category Badges */}
-                    <div className="admin-quick-pills-wrap">
-                      <span className="quick-pill-legend">Quick Toggle:</span>
-                      {POPULAR_CATEGORIES.map((cat) => {
-                        const isSelected = (formData.categories || []).includes(cat);
-                        return (
-                          <button
-                            key={cat}
-                            type="button"
-                            className={`admin-toggle-pill ${isSelected ? 'active' : ''}`}
-                            onClick={() => handleToggleCategory(cat)}
-                          >
-                            {isSelected ? <Check size={12} /> : <Plus size={12} />}
-                            <span>{cat}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="tag-input-wrapper">
-                      <div className="tags-display">
-                        {(formData.categories || []).map((cat, i) => (
-                          <span key={i} className="tag-chip">
-                            {cat}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setFormData({
-                                  ...formData,
-                                  categories: formData.categories.filter((c) => c !== cat)
-                                })
-                              }
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                      <div className="tag-input-row">
-                        <input
-                          type="text"
-                          placeholder="Type custom category & press Add (e.g. Kitchen, Living Vanity, Bedroom)"
-                          value={newCategoryInput}
-                          onChange={(e) => setNewCategoryInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              if (newCategoryInput.trim() && !formData.categories.includes(newCategoryInput.trim())) {
-                                setFormData({
-                                  ...formData,
-                                  categories: [...formData.categories, newCategoryInput.trim()]
-                                });
-                                setNewCategoryInput('');
-                              }
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="btn-sm"
-                          onClick={() => {
-                            if (newCategoryInput.trim() && !formData.categories.includes(newCategoryInput.trim())) {
-                              setFormData({
-                                ...formData,
-                                categories: [...formData.categories, newCategoryInput.trim()]
-                              });
-                              setNewCategoryInput('');
-                            }
-                          }}
-                        >
-                          Add
-                        </button>
-                      </div>
                     </div>
                   </div>
 
                   {/* Primary Cover Image */}
                   <div className="admin-input-group">
-                    <label>Primary Cover Image (Shown on portfolio card)</label>
+                    <label>Primary Cover Image (Shown on portfolio cards)</label>
                     <div className="image-uploader-box">
                       <div className="uploader-inputs">
                         <input
@@ -1772,7 +1855,7 @@ export default function AdminPortal({ onClose }) {
                               onChange={(e) => handleFileUpload(e, (url) => setFormData({ ...formData, image: url }))}
                             />
                           </label>
-                          <span className="file-hint">Accepts PNG, JPG, WEBP</span>
+                          <span className="file-hint">Accepts PNG, JPG, WEBP (Or defaults to first 3D render)</span>
                         </div>
                       </div>
 
@@ -1785,48 +1868,195 @@ export default function AdminPortal({ onClose }) {
                     </div>
                   </div>
 
+                  {/* Software Skills Used */}
                   <div className="admin-input-group">
-                    <label>Project Description</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Detailed architectural and design description of the project..."
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="admin-input-group">
-                    <label>Scope of Work</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 3D visualization, 2D floor plans, joinery detailing, laminate scheduling"
-                      value={formData.scope}
-                      onChange={(e) => setFormData({ ...formData, scope: e.target.value })}
-                    />
+                    <label>Drafting &amp; 3D Rendering Software Used</label>
+                    <div className="admin-quick-pills-wrap">
+                      {['AutoCAD 2D', '3ds Max', 'V-Ray', 'Photoshop', 'SketchUp', 'Joinery CAD'].map((sw) => {
+                        const isSelected = (formData.software || []).includes(sw);
+                        return (
+                          <button
+                            key={sw}
+                            type="button"
+                            className={`admin-toggle-pill ${isSelected ? 'active' : ''}`}
+                            onClick={() => {
+                              const list = formData.software || [];
+                              const updated = isSelected ? list.filter((s) => s !== sw) : [...list, sw];
+                              setFormData({ ...formData, software: updated });
+                            }}
+                          >
+                            {isSelected ? <Check size={12} /> : <Plus size={12} />}
+                            <span>{sw}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Tab 2: Tab Names & Room Spaces */}
-              {activeFormTab === 'tabs' && (
+              {/* ========================================================================= */}
+              {/* STEP 2: MULTIPLE CATEGORIES MAPPING (ONE PROJECT ➔ MULTIPLE CATEGORIES)   */}
+              {/* ========================================================================= */}
+              {activeFormTab === 'categories' && (
                 <div className="form-tab-pane">
-                  <div className="form-info-callout">
-                    <Layers size={18} color="#C9A474" />
+                  <div className="form-info-callout" style={{ borderLeft: '4px solid var(--color-accent)' }}>
+                    <Layers size={22} color="#C9A474" />
                     <div>
-                      <strong>Configure Room / Space Tab Names:</strong>
-                      <p>Define the interactive room space tabs that appear at the top of the project modal (e.g. "Kitchen", "Crockery Unit", "Living Vanity", "Master Bedroom TV").</p>
+                      <strong style={{ fontSize: '0.98rem', color: '#FFFFFF' }}>
+                        One Project ➔ Multiple Categories Mapping Process
+                      </strong>
+                      <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)' }}>
+                        Select all architectural categories that apply to this project. This project will automatically surface under <b>every selected category filter</b> on the live portfolio page.
+                      </p>
                     </div>
                   </div>
 
-                  <div className="admin-input-group" style={{ marginTop: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <label style={{ margin: 0 }}>Add New Room Space / Tab Name</label>
-                      <span className="file-hint">Click preset or type custom</span>
+                  {/* Primary Category Label (Card Tag) */}
+                  <div className="form-grid-2" style={{ marginTop: '16px' }}>
+                    <div className="admin-input-group">
+                      <label>Primary Display Category (Hero Tag on Card)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Kitchen & Modular Suite · 3D Renders & 2D CAD"
+                        value={formData.categoryLabel}
+                        onChange={(e) => setFormData({ ...formData, categoryLabel: e.target.value })}
+                      />
+                      <span className="file-hint">Main highlighted category label displayed on top of the portfolio card.</span>
                     </div>
 
-                    {/* Quick Space Tab Presets */}
-                    <div className="admin-quick-pills-wrap" style={{ marginBottom: '12px' }}>
-                      <span className="quick-pill-legend">Quick Presets:</span>
+                    <div className="admin-input-group">
+                      <label>Primary Room Space (Default Tab)</label>
+                      <select
+                        value={formData.roomKey || formData.categories[0] || 'Kitchen'}
+                        onChange={(e) => setFormData({ ...formData, roomKey: e.target.value })}
+                      >
+                        {(formData.categories || ['Kitchen']).map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="file-hint">The primary room perspective loaded when clicking the project.</span>
+                    </div>
+                  </div>
+
+                  {/* Multi-Select Category Matrix */}
+                  <div className="admin-category-mapping-section">
+                    <div className="mapping-section-header">
+                      <div>
+                        <h4 style={{ margin: 0, color: '#FFFFFF', fontSize: '0.95rem' }}>
+                          Map Multiple Categories to this Project:
+                        </h4>
+                        <span className="file-hint">Click each category chip to toggle mapping on or off</span>
+                      </div>
+                      <div className="mapped-count-badge">
+                        <b>{formData.categories?.length || 0}</b> Categories Mapped
+                      </div>
+                    </div>
+
+                    {/* Grid of Toggleable Category Chips */}
+                    <div className="category-mapping-grid">
+                      {POPULAR_CATEGORIES.map((cat) => {
+                        const isSelected = (formData.categories || []).includes(cat);
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            className={`category-map-pill ${isSelected ? 'mapped' : ''}`}
+                            onClick={() => handleToggleCategory(cat)}
+                          >
+                            <span className="pill-checkbox">
+                              {isSelected ? <Check size={13} /> : <Plus size={13} />}
+                            </span>
+                            <span className="pill-name">{cat}</span>
+                            {isSelected && <span className="pill-status-dot" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Category Input */}
+                    <div className="custom-category-box">
+                      <label>Add Custom Category Tag:</label>
+                      <div className="tag-input-row">
+                        <input
+                          type="text"
+                          placeholder="Type custom category & press Add (e.g. Balcony Garden, Walk-in Closet, Home Office)..."
+                          value={newCategoryInput}
+                          onChange={(e) => setNewCategoryInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (newCategoryInput.trim() && !formData.categories.includes(newCategoryInput.trim())) {
+                                setFormData({
+                                  ...formData,
+                                  categories: [...formData.categories, newCategoryInput.trim()]
+                                });
+                                setNewCategoryInput('');
+                                showToast(`Mapped custom category: "${newCategoryInput.trim()}"`);
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          onClick={() => {
+                            if (newCategoryInput.trim() && !formData.categories.includes(newCategoryInput.trim())) {
+                              setFormData({
+                                ...formData,
+                                categories: [...formData.categories, newCategoryInput.trim()]
+                              });
+                              setNewCategoryInput('');
+                              showToast(`Mapped custom category: "${newCategoryInput.trim()}"`);
+                            }
+                          }}
+                        >
+                          <Plus size={16} />
+                          <span>Map Category</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Live Mapping Summary Box */}
+                    <div className="category-mapping-summary">
+                      <span className="summary-title">⚡ Portfolio Filter Discovery Summary:</span>
+                      <p className="summary-text">
+                        This project is mapped to <b>{formData.categories.length} categories</b>. Clients will discover this project whenever filtering by any of the following tags:
+                      </p>
+                      <div className="summary-chips-wrap">
+                        {formData.categories.map((cat) => (
+                          <span key={cat} className="summary-chip">
+                            <Check size={11} color="#C9A474" />
+                            <span>{cat}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCategory(cat)}
+                              title="Remove category"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Room Space Tabs Section */}
+                  <div className="admin-space-tabs-section" style={{ marginTop: '24px' }}>
+                    <div className="mapping-section-header">
+                      <div>
+                        <h4 style={{ margin: 0, color: '#FFFFFF', fontSize: '0.95rem' }}>
+                          Interactive Room Space Tabs (Project Modal Navigator):
+                        </h4>
+                        <span className="file-hint">Define tabs displayed at the top of the project detail modal</span>
+                      </div>
+                    </div>
+
+                    {/* Quick Space Presets */}
+                    <div className="admin-quick-pills-wrap" style={{ margin: '10px 0' }}>
+                      <span className="quick-pill-legend">Quick Space Presets:</span>
                       {POPULAR_SPACE_TABS.map((tab) => {
                         const isAdded = (formData.tabNames || []).includes(tab);
                         return (
@@ -1846,7 +2076,7 @@ export default function AdminPortal({ onClose }) {
                     <div className="tag-input-row">
                       <input
                         type="text"
-                        placeholder="e.g. Living Vanity, Balcony Lounge, Wardrobe Suite"
+                        placeholder="e.g. Master Bedroom TV, Crockery Niche, Living Vanity..."
                         value={newTabNameInput}
                         onChange={(e) => setNewTabNameInput(e.target.value)}
                         onKeyDown={(e) => {
@@ -1856,58 +2086,81 @@ export default function AdminPortal({ onClose }) {
                           }
                         }}
                       />
-                      <button type="button" className="btn-primary" onClick={handleAddTabName}>
+                      <button type="button" className="btn-secondary" onClick={handleAddTabName}>
                         <Plus size={16} />
-                        <span>Add Tab</span>
+                        <span>Add Space Tab</span>
                       </button>
                     </div>
-                  </div>
 
-                  <div className="tabs-management-list">
-                    <h4>Current Space Tabs for this Project:</h4>
-                    {formData.tabNames?.length === 0 ? (
-                      <p style={{ color: 'var(--color-text-light)' }}>No specific room tabs configured. Will default to main project view.</p>
-                    ) : (
-                      <div className="tabs-chips-grid">
-                        {formData.tabNames.map((tab, idx) => (
-                          <div key={idx} className="tab-manage-card">
-                            <span className="tab-num">#{idx + 1}</span>
-                            <span className="tab-name-text">{tab}</span>
-                            <button
-                              type="button"
-                              className="tab-delete-btn"
-                              onClick={() => handleRemoveTabName(tab)}
-                              title="Remove Tab"
-                            >
-                              <X size={15} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div className="tabs-chips-grid" style={{ marginTop: '12px' }}>
+                      {(formData.tabNames || []).map((tab, idx) => (
+                        <div key={idx} className="tab-manage-card">
+                          <span className="tab-num">#{idx + 1}</span>
+                          <span className="tab-name-text">{tab}</span>
+                          <button
+                            type="button"
+                            className="tab-delete-btn"
+                            onClick={() => handleRemoveTabName(tab)}
+                            title="Remove Space Tab"
+                          >
+                            <X size={15} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Tab 3: 2D CAD Designs */}
+              {/* ========================================================================= */}
+              {/* STEP 3: 2D CAD DESIGNS (MULTIPLE IMAGES MAPPING + BATCH UPLOAD)           */}
+              {/* ========================================================================= */}
               {activeFormTab === '2d' && (
                 <div className="form-tab-pane">
                   <div className="form-info-callout">
-                    <Compass size={18} color="#C9A474" />
+                    <Compass size={20} color="#C9A474" />
                     <div>
-                      <strong>2D CAD Working Drawings &amp; Elevation Sheets:</strong>
-                      <p>Upload image or convert directly from AutoCAD PDF drawings into high-resolution 2D CAD sheets.</p>
+                      <strong>Step 3: Multiple 2D CAD Working Drawings &amp; Elevations</strong>
+                      <p>Map multiple millimeter-accurate AutoCAD floor plans, elevations, and joinery schedules. Upload multiple image files at once or convert directly from PDF documents.</p>
                     </div>
                   </div>
 
-                  {/* Add New 2D Sheet Box */}
-                  <div className="asset-add-box">
+                  {/* Batch Upload & PDF Extraction Bar */}
+                  <div className="batch-upload-toolbar">
+                    <label className="batch-upload-btn primary">
+                      <FolderPlus size={18} />
+                      <span>Batch Upload Multiple 2D CAD Images</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleBatchUpload2D}
+                      />
+                    </label>
+
+                    <label className="batch-upload-btn outline">
+                      <FileText size={18} />
+                      <span>Extract All Pages from PDF Drawing</span>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        style={{ display: 'none' }}
+                        onChange={handleBatchExtractCadPdf}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Add / Edit Individual 2D CAD Sheet */}
+                  <div className="asset-add-box" style={{ marginTop: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                      <h4 style={{ margin: 0 }}>+ Add 2D CAD Elevation Sheet</h4>
-                      {/* Direct Inline PDF Converter Button */}
+                      <h4 style={{ margin: 0 }}>
+                        {editingCadIndex !== null ? '✏️ Edit 2D CAD Sheet' : '+ Add Individual 2D CAD Sheet'}
+                      </h4>
+                      {/* Direct Inline Single-page PDF Converter Button */}
                       <label className="pdf-inline-btn">
                         <FileText size={15} />
-                        <span>⚡ Convert from PDF Document</span>
+                        <span>⚡ Convert Single Page from PDF</span>
                         <input
                           type="file"
                           accept="application/pdf"
@@ -1919,7 +2172,7 @@ export default function AdminPortal({ onClose }) {
 
                     {/* Quick Select from Studio 2D Drawings */}
                     <div className="studio-asset-quick-picker">
-                      <span className="quick-picker-label">⚡ Quick Fill from Studio 2D CAD Drawings:</span>
+                      <span className="quick-picker-label">⚡ Quick Fill from Studio 2D CAD Library:</span>
                       <div className="studio-assets-pills">
                         {STUDIO_2D_ASSETS.map((asset, i) => (
                           <button
@@ -1934,7 +2187,7 @@ export default function AdminPortal({ onClose }) {
                                 desc: asset.desc,
                                 pdfFile: ''
                               });
-                              showToast(`Selected "${asset.badge}"! Click "Add This 2D Sheet to Project" below.`);
+                              showToast(`Selected "${asset.badge}"! Click "Save & Add" below.`);
                             }}
                           >
                             <Compass size={13} />
@@ -1949,14 +2202,14 @@ export default function AdminPortal({ onClose }) {
                         <label>Sheet Title *</label>
                         <input
                           type="text"
-                          placeholder="e.g. CAD Sheet 1: 2D Floor Plan & Carcass Joinery"
+                          placeholder="e.g. CAD Sheet 1: 2D Floor Plan & Carcass Joinery Details"
                           value={cadSheetForm.title}
                           onChange={(e) => setCadSheetForm({ ...cadSheetForm, title: e.target.value })}
                         />
                       </div>
 
                       <div className="admin-input-group">
-                        <label>Sheet Badge (e.g. 2D 1, 2D 2, 2D 6)</label>
+                        <label>Sheet Badge (e.g. 2D 1, 2D 2, Page 1)</label>
                         <input
                           type="text"
                           placeholder="2D 1"
@@ -2072,32 +2325,52 @@ export default function AdminPortal({ onClose }) {
                 </div>
               )}
 
-              {/* Tab 4: 3D CGI Renders */}
+              {/* ========================================================================= */}
+              {/* STEP 4: 3D CGI RENDERS (MULTIPLE IMAGES MAPPING + BATCH UPLOAD)           */}
+              {/* ========================================================================= */}
               {activeFormTab === '3d' && (
                 <div className="form-tab-pane">
                   <div className="form-info-callout">
-                    <Sparkles size={18} color="#C9A474" />
+                    <Sparkles size={20} color="#C9A474" />
                     <div>
-                      <strong>3D CGI Photorealistic Renders:</strong>
-                      <p>Upload or link high-resolution 3D photorealistic perspective visualizations and virtual walkthrough stills.</p>
+                      <strong>Step 4: Multiple 3D CGI Photorealistic Renders</strong>
+                      <p>Map multiple perspective visualizations, materials, and virtual walkthrough stills. Upload multiple render files at once or link image URLs.</p>
                     </div>
                   </div>
 
-                  {/* Add New 3D Render Box */}
-                  <div className="asset-add-box">
+                  {/* Batch Upload Toolbar */}
+                  <div className="batch-upload-toolbar">
+                    <label className="batch-upload-btn primary">
+                      <FolderPlus size={18} />
+                      <span>Batch Upload Multiple 3D CGI Renders</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleBatchUpload3D}
+                      />
+                    </label>
+
+                    {/* Direct Inline PDF Converter Button */}
+                    <label className="batch-upload-btn outline">
+                      <FileText size={18} />
+                      <span>Extract 3D Render from PDF Document</span>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        style={{ display: 'none' }}
+                        onChange={handleInline3dPdfConvert}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Add / Edit Individual 3D Render Box */}
+                  <div className="asset-add-box" style={{ marginTop: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                      <h4 style={{ margin: 0 }}>+ Add 3D CGI Render View</h4>
-                      {/* Direct Inline PDF Converter Button */}
-                      <label className="pdf-inline-btn">
-                        <FileText size={15} />
-                        <span>⚡ Extract from PDF</span>
-                        <input
-                          type="file"
-                          accept="application/pdf"
-                          style={{ display: 'none' }}
-                          onChange={handleInline3dPdfConvert}
-                        />
-                      </label>
+                      <h4 style={{ margin: 0 }}>
+                        {editingRenderIndex !== null ? '✏️ Edit 3D CGI Render' : '+ Add Individual 3D CGI Render'}
+                      </h4>
                     </div>
 
                     {/* Quick Select from Studio 3D CGI Renders */}
@@ -2116,7 +2389,7 @@ export default function AdminPortal({ onClose }) {
                                 src: asset.src,
                                 desc: asset.desc
                               });
-                              showToast(`Selected "${asset.badge}"! Click "Add This 3D Render to Project" below.`);
+                              showToast(`Selected "${asset.badge}"! Click "Save & Add" below.`);
                             }}
                           >
                             <Sparkles size={13} />
@@ -2252,34 +2525,270 @@ export default function AdminPortal({ onClose }) {
                 </div>
               )}
 
-              {/* Form Bottom Action Bar */}
+              {/* ========================================================================= */}
+              {/* STEP 5: DESCRIPTIONS & TECHNICAL SPECIFICATIONS                           */}
+              {/* ========================================================================= */}
+              {activeFormTab === 'descriptions' && (
+                <div className="form-tab-pane">
+                  <div className="form-info-callout">
+                    <Sliders size={20} color="#C9A474" />
+                    <div>
+                      <strong>Step 5: Architectural Descriptions &amp; Technical Specifications</strong>
+                      <p>Detail the full architectural design narrative, material palettes (Merino laminates, stone, PU finishes), and millimeter joinery specs.</p>
+                    </div>
+                  </div>
+
+                  {/* Project Full Description */}
+                  <div className="admin-input-group" style={{ marginTop: '16px' }}>
+                    <label>Project Architectural Narrative &amp; Overview *</label>
+                    <textarea
+                      rows={4}
+                      placeholder="Comprehensive architectural narrative detailing spatial layout, work triangles, lighting design, ergonomics, and bespoke millwork..."
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Material & Laminate Palette */}
+                  <div className="admin-input-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label style={{ margin: 0 }}>Material &amp; Laminate Palette</label>
+                      <span className="file-hint">Merino laminates, finishes, hardware</span>
+                    </div>
+
+                    <div className="tags-display" style={{ marginBottom: '8px' }}>
+                      {(formData.palette || []).map((item, idx) => (
+                        <span key={idx} className="tag-chip">
+                          {item}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.palette.filter((_, i) => i !== idx);
+                              setFormData({ ...formData, palette: updated });
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="tag-input-row">
+                      <input
+                        type="text"
+                        placeholder="e.g. 21187 HGL Champagne (Merino), Jet Black Granite, Natural Reed 46247..."
+                        value={newPaletteInput}
+                        onChange={(e) => setNewPaletteInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newPaletteInput.trim()) {
+                              setFormData({
+                                ...formData,
+                                palette: [...(formData.palette || []), newPaletteInput.trim()]
+                              });
+                              setNewPaletteInput('');
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => {
+                          if (newPaletteInput.trim()) {
+                            setFormData({
+                              ...formData,
+                              palette: [...(formData.palette || []), newPaletteInput.trim()]
+                            });
+                            setNewPaletteInput('');
+                          }
+                        }}
+                      >
+                        <Plus size={16} />
+                        <span>Add Material</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Technical Specifications (Overall Dimensions, Carcass, Hardware) */}
+                  <div className="admin-tech-specs-box" style={{ marginTop: '20px' }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: '#FFFFFF', fontSize: '0.95rem' }}>
+                      Technical Joinery &amp; Production Specifications:
+                    </h4>
+
+                    <div className="form-grid-2">
+                      <div className="admin-input-group">
+                        <label>Overall Dimensions</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 2285mm × 2675mm (L-Shape Configuration)"
+                          value={formData.technicalUnitsList?.dimensions?.overall || ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                dimensions: {
+                                  ...(formData.technicalUnitsList?.dimensions || {}),
+                                  overall: e.target.value
+                                }
+                              }
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="admin-input-group">
+                        <label>Carcass Core Material</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. BWP Marine Grade Plywood in Half White"
+                          value={
+                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Carcass'))?.spec || ''
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
+                            const idx = prod.findIndex(p => p.item?.includes('Carcass'));
+                            if (idx >= 0) {
+                              prod[idx] = { ...prod[idx], spec: val };
+                            } else {
+                              prod.push({ item: 'Carcass Core Material', spec: val });
+                            }
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                productionDetails: prod
+                              }
+                            });
+                          }}
+                        />
+                      </div>
+
+                      <div className="admin-input-group">
+                        <label>Shutter Finish &amp; Edge Banding</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. CC Elite with matching edge banding"
+                          value={
+                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Shutter'))?.spec || ''
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
+                            const idx = prod.findIndex(p => p.item?.includes('Shutter'));
+                            if (idx >= 0) {
+                              prod[idx] = { ...prod[idx], spec: val };
+                            } else {
+                              prod.push({ item: 'Shutter Type & Finish', spec: val });
+                            }
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                productionDetails: prod
+                              }
+                            });
+                          }}
+                        />
+                      </div>
+
+                      <div className="admin-input-group">
+                        <label>Hardware &amp; Runners System</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. EBCO Soft Closing Tandem Runners & 3D Hinges"
+                          value={
+                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Hardware') || p.item?.includes('Runners'))?.spec || ''
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
+                            const idx = prod.findIndex(p => p.item?.includes('Hardware') || p.item?.includes('Runners'));
+                            if (idx >= 0) {
+                              prod[idx] = { ...prod[idx], spec: val };
+                            } else {
+                              prod.push({ item: 'Hardware & Runners', spec: val });
+                            }
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                productionDetails: prod
+                              }
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Stepper Navigation & Persistent Action Bar */}
               <div className="admin-form-actions-bar">
-                {editingProjectId ? (
-                  <button
-                    type="button"
-                    className="btn-danger-outline"
-                    onClick={() => {
-                      setProjectToDelete({ id: editingProjectId, title: formData.title });
-                    }}
-                    title="Delete this project from portfolio"
-                  >
-                    <Trash2 size={16} />
-                    <span>Delete This Project</span>
-                  </button>
-                ) : <div />}
+                <div className="form-actions-left">
+                  {editingProjectId ? (
+                    <button
+                      type="button"
+                      className="btn-danger-outline"
+                      onClick={() => {
+                        setProjectToDelete({ id: editingProjectId, title: formData.title });
+                      }}
+                      title="Delete this project from portfolio"
+                    >
+                      <Trash2 size={16} />
+                      <span>Delete Project</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => setIsFormOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => setIsFormOpen(false)}
-                  >
-                    Cancel
-                  </button>
+                <div className="form-actions-center-stepper">
+                  {activeFormTab !== 'basic' && (
+                    <button
+                      type="button"
+                      className="btn-stepper prev"
+                      onClick={() => {
+                        const stepOrder = ['basic', 'categories', '2d', '3d', 'descriptions'];
+                        const currIdx = stepOrder.indexOf(activeFormTab);
+                        if (currIdx > 0) setActiveFormTab(stepOrder[currIdx - 1]);
+                      }}
+                    >
+                      <ChevronLeft size={16} />
+                      <span>Previous Step</span>
+                    </button>
+                  )}
 
-                  <button type="submit" className="btn-primary">
+                  {activeFormTab !== 'descriptions' && (
+                    <button
+                      type="button"
+                      className="btn-stepper next"
+                      onClick={() => {
+                        const stepOrder = ['basic', 'categories', '2d', '3d', 'descriptions'];
+                        const currIdx = stepOrder.indexOf(activeFormTab);
+                        if (currIdx < stepOrder.length - 1) setActiveFormTab(stepOrder[currIdx + 1]);
+                      }}
+                    >
+                      <span>Next Step</span>
+                      <ChevronRight size={16} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="form-actions-right">
+                  <button type="submit" className="btn-primary" style={{ padding: '10px 24px', fontWeight: 700 }}>
                     <Check size={18} />
-                    <span>{editingProjectId ? 'Save & Update Project' : 'Create Project'}</span>
+                    <span>{editingProjectId ? 'Save & Update All Changes' : 'Create Project'}</span>
                   </button>
                 </div>
               </div>
