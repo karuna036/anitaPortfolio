@@ -82,9 +82,9 @@ export function getAdminSession() {
 export function getStoredProjects() {
   try {
     const stored = localStorage.getItem(STORAGE_PROJECTS_KEY);
-    if (stored) {
+    if (stored !== null) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed;
       }
     }
@@ -196,13 +196,26 @@ export function updateProject(id, updatedFields) {
 }
 
 /**
- * Delete a project by ID
+ * Delete a project by ID or project object
  */
-export function deleteProject(id) {
+export function deleteProject(idOrProject) {
+  const targetId = typeof idOrProject === 'object' && idOrProject !== null ? idOrProject.id : idOrProject;
+  const targetTitle = typeof idOrProject === 'object' && idOrProject !== null ? idOrProject.title : null;
   const current = getStoredProjects();
-  const filtered = current.filter((p) => String(p.id) !== String(id));
+  const cleanId = targetId !== undefined && targetId !== null ? String(targetId).trim() : null;
+
+  const filtered = current.filter((p) => {
+    if (cleanId !== null && String(p.id).trim() === cleanId) {
+      return false;
+    }
+    if (targetTitle && p.title && p.title.trim().toLowerCase() === targetTitle.trim().toLowerCase()) {
+      return false;
+    }
+    return true;
+  });
+
   saveProjects(filtered);
-  return true;
+  return filtered;
 }
 
 /**

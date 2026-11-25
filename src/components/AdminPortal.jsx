@@ -25,7 +25,8 @@ import {
   Copy,
   Sliders,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import {
   checkAdminAuth,
@@ -226,6 +227,10 @@ export default function AdminPortal({ onClose }) {
   // Track if editing an existing 2D/3D asset in place
   const [editingCadIndex, setEditingCadIndex] = useState(null);
   const [editingRenderIndex, setEditingRenderIndex] = useState(null);
+
+  // In-App confirmation modals (avoids browser-blocked window.confirm)
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Load projects from storage
   const refreshProjects = () => {
@@ -502,22 +507,46 @@ export default function AdminPortal({ onClose }) {
     setIsFormOpen(true);
   };
 
-  // Delete Project
+  // Delete Project Trigger (opens in-app confirmation modal)
   const handleDelete = (id, title) => {
-    if (window.confirm(`Are you sure you want to delete project: "${title}"?`)) {
-      deleteProject(id);
-      refreshProjects();
-      showToast(`Deleted project: "${title}"`);
+    setProjectToDelete({ id, title });
+  };
+
+  // Confirm delete project
+  const handleConfirmDelete = () => {
+    if (!projectToDelete) return;
+    const { id, title } = projectToDelete;
+    deleteProject(id);
+    const updated = getStoredProjects();
+    setProjects(updated);
+    showToast(`Deleted project: "${title}"`, 'success');
+    setProjectToDelete(null);
+
+    // If currently editing this project, close the form modal
+    if (editingProjectId && String(editingProjectId) === String(id)) {
+      setIsFormOpen(false);
+      setEditingProjectId(null);
     }
   };
 
-  // Reset to Defaults
+  // Cancel delete
+  const handleCancelDelete = () => {
+    setProjectToDelete(null);
+  };
+
+  // Reset to Defaults Trigger
   const handleResetDefaults = () => {
-    if (window.confirm('Reset all portfolio projects back to default portfolio state? Custom added projects will be replaced.')) {
-      resetProjectsToDefault();
-      refreshProjects();
-      showToast('Restored all initial portfolio projects.');
-    }
+    setShowResetConfirm(true);
+  };
+
+  // Confirm reset to defaults
+  const handleConfirmResetDefaults = () => {
+    resetProjectsToDefault();
+    const updated = getStoredProjects();
+    setProjects(updated);
+    setCategories(getStoredCategories());
+    showToast('Restored all original studio portfolio projects!', 'success');
+    setShowResetConfirm(false);
   };
 
   // Save Project Form
@@ -717,12 +746,16 @@ export default function AdminPortal({ onClose }) {
     }
   };
 
-  // Remove gallery item
-  const handleRemoveGalleryItem = (index) => {
-    const updated = [...formData.galleryImages];
-    updated.splice(index, 1);
+  // Remove gallery item by ID or index
+  const handleRemoveGalleryItem = (indexOrId) => {
+    let updated;
+    if (typeof indexOrId === 'number') {
+      updated = formData.galleryImages.filter((_, idx) => idx !== indexOrId);
+    } else {
+      updated = formData.galleryImages.filter((item) => item.id !== indexOrId);
+    }
     setFormData({ ...formData, galleryImages: updated });
-    showToast('Removed asset from gallery');
+    showToast('Removed asset from project gallery. Click "Save & Update Project" to persist.', 'info');
   };
 
   // Add tab name
@@ -1206,11 +1239,16 @@ export default function AdminPortal({ onClose }) {
                                   </button>
 
                                   <button
+                                    type="button"
                                     className="action-btn delete"
-                                    onClick={() => handleDelete(project.id, project.title)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(project.id, project.title);
+                                    }}
                                     title="Delete Project"
                                   >
                                     <Trash2 size={15} />
+                                    <span>Delete</span>
                                   </button>
                                 </div>
                               </td>
@@ -1334,7 +1372,10 @@ export default function AdminPortal({ onClose }) {
                             <button
                               type="button"
                               className="action-btn delete"
-                              onClick={() => handleDelete(project.id, project.title)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(project.id, project.title);
+                              }}
                               title="Delete Project"
                             >
                               <Trash2 size={15} />
@@ -2018,7 +2059,7 @@ export default function AdminPortal({ onClose }) {
                               <button
                                 type="button"
                                 className="asset-delete-btn"
-                                onClick={() => handleRemoveGalleryItem(originalIndex)}
+                                onClick={() => handleRemoveGalleryItem(item.id || originalIndex)}
                                 title="Delete sheet"
                               >
                                 <Trash2 size={16} />
@@ -2198,7 +2239,7 @@ export default function AdminPortal({ onClose }) {
                               <button
                                 type="button"
                                 className="asset-delete-btn"
-                                onClick={() => handleRemoveGalleryItem(originalIndex)}
+                                onClick={() => handleRemoveGalleryItem(item.id || originalIndex)}
                                 title="Delete render"
                               >
                                 <Trash2 size={16} />
@@ -2213,18 +2254,34 @@ export default function AdminPortal({ onClose }) {
 
               {/* Form Bottom Action Bar */}
               <div className="admin-form-actions-bar">
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => setIsFormOpen(false)}
-                >
-                  Cancel
-                </button>
+                {editingProjectId ? (
+                  <button
+                    type="button"
+                    className="btn-danger-outline"
+                    onClick={() => {
+                      setProjectToDelete({ id: editingProjectId, title: formData.title });
+                    }}
+                    title="Delete this project from portfolio"
+                  >
+                    <Trash2 size={16} />
+                    <span>Delete This Project</span>
+                  </button>
+                ) : <div />}
 
-                <button type="submit" className="btn-primary">
-                  <Check size={18} />
-                  <span>{editingProjectId ? 'Save & Update Project' : 'Create Project'}</span>
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setIsFormOpen(false)}
+                  >
+                    Cancel
+                  </button>
+
+                  <button type="submit" className="btn-primary">
+                    <Check size={18} />
+                    <span>{editingProjectId ? 'Save & Update Project' : 'Create Project'}</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -2253,6 +2310,106 @@ export default function AdminPortal({ onClose }) {
           project={previewProject}
           onClose={() => setPreviewProject(null)}
         />
+      )}
+
+      {/* In-App Delete Project Confirmation Modal */}
+      {projectToDelete && (
+        <div
+          className="admin-delete-confirm-overlay"
+          onClick={handleCancelDelete}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="admin-delete-confirm-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="delete-confirm-icon-box">
+              <AlertTriangle size={36} color="#E53E3E" />
+            </div>
+
+            <h3 className="delete-confirm-title">Delete Project?</h3>
+
+            <p className="delete-confirm-msg">
+              Are you sure you want to permanently delete:
+              <br />
+              <strong className="delete-project-name">"{projectToDelete.title}"</strong>
+            </p>
+
+            <div className="delete-confirm-warning">
+              This will remove the project along with its 2D CAD elevation sheets, 3D CGI renders, and specifications from the portfolio.
+            </div>
+
+            <div className="delete-confirm-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={handleCancelDelete}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="btn-danger"
+                onClick={handleConfirmDelete}
+                autoFocus
+              >
+                <Trash2 size={16} />
+                <span>Yes, Delete Project</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* In-App Reset Defaults Confirmation Modal */}
+      {showResetConfirm && (
+        <div
+          className="admin-delete-confirm-overlay"
+          onClick={() => setShowResetConfirm(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="admin-delete-confirm-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="delete-confirm-icon-box reset">
+              <RotateCcw size={36} color="var(--color-accent)" />
+            </div>
+
+            <h3 className="delete-confirm-title">Reset to Default Portfolio?</h3>
+
+            <p className="delete-confirm-msg">
+              Restore all original studio architectural projects, 2D CAD floor plans, and 3D CGI photorealistic visualizations.
+            </p>
+
+            <div className="delete-confirm-warning reset">
+              Custom added or modified projects will be replaced with original studio files.
+            </div>
+
+            <div className="delete-confirm-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowResetConfirm(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handleConfirmResetDefaults}
+                autoFocus
+              >
+                <RotateCcw size={16} />
+                <span>Reset to Defaults</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
