@@ -686,7 +686,7 @@ export default function AdminPortal({ onClose }) {
     setShowResetConfirm(false);
   };
 
-  // Save Project Form (Saves all 5 steps together)
+  // Save Project Form (Saves all 4 steps together: 1. Project Create, 2. Categories, 3. 2D Images, 4. 3D Images)
   const handleSaveForm = (e) => {
     if (e) e.preventDefault();
     if (!formData.title.trim()) {
@@ -1748,7 +1748,7 @@ export default function AdminPortal({ onClose }) {
               </div>
             </div>
 
-            {/* 5-Step Process Tabs Inside Form */}
+            {/* 4-Step Process Tabs Inside Form */}
             <div className="admin-form-tabs">
               <button
                 className={`form-tab-btn ${activeFormTab === 'basic' ? 'active' : ''}`}
@@ -1756,7 +1756,7 @@ export default function AdminPortal({ onClose }) {
                 type="button"
               >
                 <FileText size={15} />
-                <span>1. Project Identity</span>
+                <span>1. Project Create</span>
               </button>
 
               <button
@@ -1765,7 +1765,7 @@ export default function AdminPortal({ onClose }) {
                 type="button"
               >
                 <Layers size={15} />
-                <span>2. Multiple Categories ({formData.categories?.length || 0})</span>
+                <span>2. Categories Create & Map ({formData.categories?.length || 0})</span>
               </button>
 
               <button
@@ -1774,7 +1774,7 @@ export default function AdminPortal({ onClose }) {
                 type="button"
               >
                 <Compass size={15} />
-                <span>3. 2D CAD Images ({formData.galleryImages?.filter(g => (g.type || '').includes('2D') || (g.badge || '').includes('2D')).length})</span>
+                <span>3. 2D Images Upload ({formData.galleryImages?.filter(g => (g.type || '').includes('2D') || (g.badge || '').includes('2D')).length})</span>
               </button>
 
               <button
@@ -1783,30 +1783,21 @@ export default function AdminPortal({ onClose }) {
                 type="button"
               >
                 <Sparkles size={15} />
-                <span>4. 3D CGI Images ({formData.galleryImages?.filter(g => (g.type || '').includes('3D') || (g.badge || '').includes('3D')).length})</span>
-              </button>
-
-              <button
-                className={`form-tab-btn ${activeFormTab === 'descriptions' ? 'active' : ''}`}
-                onClick={() => setActiveFormTab('descriptions')}
-                type="button"
-              >
-                <Sliders size={15} />
-                <span>5. Descriptions &amp; Specs</span>
+                <span>4. 3D Images Upload ({formData.galleryImages?.filter(g => (g.type || '').includes('3D') || (g.badge || '').includes('3D')).length})</span>
               </button>
             </div>
 
             <form onSubmit={handleSaveForm} className="admin-form-content">
               {/* ========================================================================= */}
-              {/* STEP 1: PROJECT IDENTITY (TITLE, SCOPE, PRIMARY COVER IMAGE)              */}
+              {/* STEP 1: PROJECT CREATE FORM (TITLE, COVER, SCOPE, DESCRIPTION & SPECS)    */}
               {/* ========================================================================= */}
               {activeFormTab === 'basic' && (
                 <div className="form-tab-pane">
                   <div className="form-info-callout">
                     <FileText size={20} color="#C9A474" />
                     <div>
-                      <strong>Step 1: Project Identity &amp; Cover</strong>
-                      <p>Set the project title, primary cover presentation image, scope, and CAD software tools.</p>
+                      <strong>Step 1: Project Create Form</strong>
+                      <p>Define the project title, cover presentation image, deliverables scope, software tools, architectural narrative description, material palette, and technical joinery specifications.</p>
                     </div>
                   </div>
 
@@ -1890,6 +1881,193 @@ export default function AdminPortal({ onClose }) {
                           </button>
                         );
                       })}
+                    </div>
+                  </div>
+
+                  {/* Project Architectural Narrative & Overview */}
+                  <div className="admin-input-group" style={{ marginTop: '20px' }}>
+                    <label>Project Architectural Narrative &amp; Overview Description *</label>
+                    <textarea
+                      rows={4}
+                      placeholder="Comprehensive architectural narrative detailing spatial layout, work triangles, lighting design, ergonomics, and bespoke millwork..."
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Material & Laminate Palette */}
+                  <div className="admin-input-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label style={{ margin: 0 }}>Material &amp; Laminate Palette</label>
+                      <span className="file-hint">Merino laminates, finishes, hardware</span>
+                    </div>
+
+                    <div className="tags-display" style={{ marginBottom: '8px' }}>
+                      {(formData.palette || []).map((item, idx) => (
+                        <span key={idx} className="tag-chip">
+                          {item}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.palette.filter((_, i) => i !== idx);
+                              setFormData({ ...formData, palette: updated });
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="tag-input-row">
+                      <input
+                        type="text"
+                        placeholder="e.g. 21187 HGL Champagne (Merino), Jet Black Granite, Natural Reed 46247..."
+                        value={newPaletteInput}
+                        onChange={(e) => setNewPaletteInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newPaletteInput.trim()) {
+                              setFormData({
+                                ...formData,
+                                palette: [...(formData.palette || []), newPaletteInput.trim()]
+                              });
+                              setNewPaletteInput('');
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => {
+                          if (newPaletteInput.trim()) {
+                            setFormData({
+                              ...formData,
+                              palette: [...(formData.palette || []), newPaletteInput.trim()]
+                            });
+                            setNewPaletteInput('');
+                          }
+                        }}
+                      >
+                        <Plus size={16} />
+                        <span>Add Material</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Technical Specifications (Overall Dimensions, Carcass, Hardware) */}
+                  <div className="admin-tech-specs-box" style={{ marginTop: '20px' }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: '#FFFFFF', fontSize: '0.95rem' }}>
+                      Technical Joinery &amp; Production Specifications:
+                    </h4>
+
+                    <div className="form-grid-2">
+                      <div className="admin-input-group">
+                        <label>Overall Dimensions</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 2285mm × 2675mm (L-Shape Configuration)"
+                          value={formData.technicalUnitsList?.dimensions?.overall || ''}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                dimensions: {
+                                  ...(formData.technicalUnitsList?.dimensions || {}),
+                                  overall: e.target.value
+                                }
+                              }
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="admin-input-group">
+                        <label>Carcass Core Material</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. BWP Marine Grade Plywood in Half White"
+                          value={
+                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Carcass'))?.spec || ''
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
+                            const idx = prod.findIndex(p => p.item?.includes('Carcass'));
+                            if (idx >= 0) {
+                              prod[idx] = { ...prod[idx], spec: val };
+                            } else {
+                              prod.push({ item: 'Carcass Core Material', spec: val });
+                            }
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                productionDetails: prod
+                              }
+                            });
+                          }}
+                        />
+                      </div>
+
+                      <div className="admin-input-group">
+                        <label>Shutter Finish &amp; Edge Banding</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. CC Elite with matching edge banding"
+                          value={
+                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Shutter'))?.spec || ''
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
+                            const idx = prod.findIndex(p => p.item?.includes('Shutter'));
+                            if (idx >= 0) {
+                              prod[idx] = { ...prod[idx], spec: val };
+                            } else {
+                              prod.push({ item: 'Shutter Type & Finish', spec: val });
+                            }
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                productionDetails: prod
+                              }
+                            });
+                          }}
+                        />
+                      </div>
+
+                      <div className="admin-input-group">
+                        <label>Hardware &amp; Runners System</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. EBCO Soft Closing Tandem Runners & 3D Hinges"
+                          value={
+                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Hardware') || p.item?.includes('Runners'))?.spec || ''
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
+                            const idx = prod.findIndex(p => p.item?.includes('Hardware') || p.item?.includes('Runners'));
+                            if (idx >= 0) {
+                              prod[idx] = { ...prod[idx], spec: val };
+                            } else {
+                              prod.push({ item: 'Hardware & Runners', spec: val });
+                            }
+                            setFormData({
+                              ...formData,
+                              technicalUnitsList: {
+                                ...formData.technicalUnitsList,
+                                productionDetails: prod
+                              }
+                            });
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2525,208 +2703,6 @@ export default function AdminPortal({ onClose }) {
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* STEP 5: DESCRIPTIONS & TECHNICAL SPECIFICATIONS                           */}
-              {/* ========================================================================= */}
-              {activeFormTab === 'descriptions' && (
-                <div className="form-tab-pane">
-                  <div className="form-info-callout">
-                    <Sliders size={20} color="#C9A474" />
-                    <div>
-                      <strong>Step 5: Architectural Descriptions &amp; Technical Specifications</strong>
-                      <p>Detail the full architectural design narrative, material palettes (Merino laminates, stone, PU finishes), and millimeter joinery specs.</p>
-                    </div>
-                  </div>
-
-                  {/* Project Full Description */}
-                  <div className="admin-input-group" style={{ marginTop: '16px' }}>
-                    <label>Project Architectural Narrative &amp; Overview *</label>
-                    <textarea
-                      rows={4}
-                      placeholder="Comprehensive architectural narrative detailing spatial layout, work triangles, lighting design, ergonomics, and bespoke millwork..."
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    />
-                  </div>
-
-                  {/* Material & Laminate Palette */}
-                  <div className="admin-input-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <label style={{ margin: 0 }}>Material &amp; Laminate Palette</label>
-                      <span className="file-hint">Merino laminates, finishes, hardware</span>
-                    </div>
-
-                    <div className="tags-display" style={{ marginBottom: '8px' }}>
-                      {(formData.palette || []).map((item, idx) => (
-                        <span key={idx} className="tag-chip">
-                          {item}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = formData.palette.filter((_, i) => i !== idx);
-                              setFormData({ ...formData, palette: updated });
-                            }}
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="tag-input-row">
-                      <input
-                        type="text"
-                        placeholder="e.g. 21187 HGL Champagne (Merino), Jet Black Granite, Natural Reed 46247..."
-                        value={newPaletteInput}
-                        onChange={(e) => setNewPaletteInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (newPaletteInput.trim()) {
-                              setFormData({
-                                ...formData,
-                                palette: [...(formData.palette || []), newPaletteInput.trim()]
-                              });
-                              setNewPaletteInput('');
-                            }
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        onClick={() => {
-                          if (newPaletteInput.trim()) {
-                            setFormData({
-                              ...formData,
-                              palette: [...(formData.palette || []), newPaletteInput.trim()]
-                            });
-                            setNewPaletteInput('');
-                          }
-                        }}
-                      >
-                        <Plus size={16} />
-                        <span>Add Material</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Technical Specifications (Overall Dimensions, Carcass, Hardware) */}
-                  <div className="admin-tech-specs-box" style={{ marginTop: '20px' }}>
-                    <h4 style={{ margin: '0 0 12px 0', color: '#FFFFFF', fontSize: '0.95rem' }}>
-                      Technical Joinery &amp; Production Specifications:
-                    </h4>
-
-                    <div className="form-grid-2">
-                      <div className="admin-input-group">
-                        <label>Overall Dimensions</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. 2285mm × 2675mm (L-Shape Configuration)"
-                          value={formData.technicalUnitsList?.dimensions?.overall || ''}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              technicalUnitsList: {
-                                ...formData.technicalUnitsList,
-                                dimensions: {
-                                  ...(formData.technicalUnitsList?.dimensions || {}),
-                                  overall: e.target.value
-                                }
-                              }
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="admin-input-group">
-                        <label>Carcass Core Material</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. BWP Marine Grade Plywood in Half White"
-                          value={
-                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Carcass'))?.spec || ''
-                          }
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
-                            const idx = prod.findIndex(p => p.item?.includes('Carcass'));
-                            if (idx >= 0) {
-                              prod[idx] = { ...prod[idx], spec: val };
-                            } else {
-                              prod.push({ item: 'Carcass Core Material', spec: val });
-                            }
-                            setFormData({
-                              ...formData,
-                              technicalUnitsList: {
-                                ...formData.technicalUnitsList,
-                                productionDetails: prod
-                              }
-                            });
-                          }}
-                        />
-                      </div>
-
-                      <div className="admin-input-group">
-                        <label>Shutter Finish &amp; Edge Banding</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. CC Elite with matching edge banding"
-                          value={
-                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Shutter'))?.spec || ''
-                          }
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
-                            const idx = prod.findIndex(p => p.item?.includes('Shutter'));
-                            if (idx >= 0) {
-                              prod[idx] = { ...prod[idx], spec: val };
-                            } else {
-                              prod.push({ item: 'Shutter Type & Finish', spec: val });
-                            }
-                            setFormData({
-                              ...formData,
-                              technicalUnitsList: {
-                                ...formData.technicalUnitsList,
-                                productionDetails: prod
-                              }
-                            });
-                          }}
-                        />
-                      </div>
-
-                      <div className="admin-input-group">
-                        <label>Hardware &amp; Runners System</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. EBCO Soft Closing Tandem Runners & 3D Hinges"
-                          value={
-                            formData.technicalUnitsList?.productionDetails?.find(p => p.item?.includes('Hardware') || p.item?.includes('Runners'))?.spec || ''
-                          }
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const prod = [...(formData.technicalUnitsList?.productionDetails || [])];
-                            const idx = prod.findIndex(p => p.item?.includes('Hardware') || p.item?.includes('Runners'));
-                            if (idx >= 0) {
-                              prod[idx] = { ...prod[idx], spec: val };
-                            } else {
-                              prod.push({ item: 'Hardware & Runners', spec: val });
-                            }
-                            setFormData({
-                              ...formData,
-                              technicalUnitsList: {
-                                ...formData.technicalUnitsList,
-                                productionDetails: prod
-                              }
-                            });
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Stepper Navigation & Persistent Action Bar */}
               <div className="admin-form-actions-bar">
                 <div className="form-actions-left">
@@ -2759,7 +2735,7 @@ export default function AdminPortal({ onClose }) {
                       type="button"
                       className="btn-stepper prev"
                       onClick={() => {
-                        const stepOrder = ['basic', 'categories', '2d', '3d', 'descriptions'];
+                        const stepOrder = ['basic', 'categories', '2d', '3d'];
                         const currIdx = stepOrder.indexOf(activeFormTab);
                         if (currIdx > 0) setActiveFormTab(stepOrder[currIdx - 1]);
                       }}
@@ -2769,12 +2745,19 @@ export default function AdminPortal({ onClose }) {
                     </button>
                   )}
 
-                  {activeFormTab !== 'descriptions' && (
+                  <div className="form-step-counter-pill">
+                    {activeFormTab === 'basic' && 'Step 1 of 4: Project Create'}
+                    {activeFormTab === 'categories' && 'Step 2 of 4: Categories Create & Map'}
+                    {activeFormTab === '2d' && 'Step 3 of 4: 2D Images Upload'}
+                    {activeFormTab === '3d' && 'Step 4 of 4: 3D Images Upload'}
+                  </div>
+
+                  {activeFormTab !== '3d' && (
                     <button
                       type="button"
                       className="btn-stepper next"
                       onClick={() => {
-                        const stepOrder = ['basic', 'categories', '2d', '3d', 'descriptions'];
+                        const stepOrder = ['basic', 'categories', '2d', '3d'];
                         const currIdx = stepOrder.indexOf(activeFormTab);
                         if (currIdx < stepOrder.length - 1) setActiveFormTab(stepOrder[currIdx + 1]);
                       }}
@@ -2788,7 +2771,7 @@ export default function AdminPortal({ onClose }) {
                 <div className="form-actions-right">
                   <button type="submit" className="btn-primary" style={{ padding: '10px 24px', fontWeight: 700 }}>
                     <Check size={18} />
-                    <span>{editingProjectId ? 'Save & Update All Changes' : 'Create Project'}</span>
+                    <span>{editingProjectId ? 'Save & Update All Changes' : 'Save Complete Project (All 4 Steps)'}</span>
                   </button>
                 </div>
               </div>
