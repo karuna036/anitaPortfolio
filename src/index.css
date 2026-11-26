@@ -363,27 +363,37 @@ h1, h2, h3, h4, h5, h6 {
 
 .brand-name {
   font-family: var(--font-serif);
-  font-size: 1.35rem;
+  font-size: 1.18rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   color: #FAF7F2 !important;
   text-transform: uppercase;
-  line-height: 1.1;
+  line-height: 1.15;
+  white-space: nowrap;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 @media (min-width: 768px) {
   .brand-name {
     font-size: 1.55rem;
+    letter-spacing: 0.08em;
   }
 }
 
 .brand-sub {
-  font-size: 0.62rem;
+  font-size: 0.56rem;
   font-weight: 700;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.16em;
   color: #DFBE82 !important;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .brand-sub {
+    font-size: 0.65rem;
+    letter-spacing: 0.28em;
+  }
 }
 
 /* Desktop & Laptop nav links */
@@ -438,12 +448,25 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 
-.nav-cta-btn {
+/* Right side action controls */
+.nav-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .nav-actions-right {
+    gap: 12px;
+  }
+}
+
+.nav-whatsapp-btn {
   display: none;
 }
 
-@media (min-width: 1025px) {
-  .nav-cta-btn {
+@media (min-width: 640px) {
+  .nav-whatsapp-btn {
     display: inline-flex;
   }
 }

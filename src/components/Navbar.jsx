@@ -109,7 +109,7 @@ export default function Navbar({ onOpenAdmin }) {
               })}
             </nav>
 
-            <div className="nav-cta-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="nav-actions-right">
               {onOpenAdmin && (
                 <button
                   type="button"
@@ -125,21 +125,21 @@ export default function Navbar({ onOpenAdmin }) {
                 href={personalInfo.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-primary"
-                style={{ padding: '10px 20px', fontSize: '0.8rem' }}
+                className="btn-primary nav-whatsapp-btn"
+                style={{ padding: '9px 18px', fontSize: '0.78rem' }}
               >
                 <span>WhatsApp</span>
-                <ArrowUpRight size={15} />
+                <ArrowUpRight size={14} />
               </a>
-            </div>
 
-            <button
-              className="mobile-menu-toggle"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open mobile menu"
-            >
-              <Menu size={26} />
-            </button>
+              <button
+                className="mobile-menu-toggle"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open mobile menu"
+              >
+                <Menu size={22} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
