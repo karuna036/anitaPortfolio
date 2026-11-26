@@ -43,7 +43,9 @@ export default function CategoryGalleryPage() {
     return (
       <div className="portfolio-flow-page">
         <div className="flow-empty-state">
-          <Compass size={40} color="#C9A474" />
+          <div className="flow-empty-icon-wrap">
+            <Compass size={38} color="var(--color-accent)" />
+          </div>
           <h2>Category Not Found</h2>
           <p>The interior design category you are looking for does not exist or has been moved.</p>
           <button
@@ -214,7 +216,9 @@ export default function CategoryGalleryPage() {
       <div className="flow-gallery-grid">
         {filteredImages.length === 0 ? (
           <div className="flow-empty-state" style={{ gridColumn: '1 / -1' }}>
-            <Compass size={36} color="#C9A474" />
+            <div className="flow-empty-icon-wrap">
+              <Compass size={38} color="var(--color-accent)" />
+            </div>
             <h3>No images found in this filter</h3>
             <button
               type="button"

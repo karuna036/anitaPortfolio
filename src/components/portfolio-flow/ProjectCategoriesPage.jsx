@@ -35,7 +35,9 @@ export default function ProjectCategoriesPage() {
     return (
       <div className="portfolio-flow-page">
         <div className="flow-empty-state">
-          <Compass size={40} color="#C9A474" />
+          <div className="flow-empty-icon-wrap">
+            <Compass size={38} color="var(--color-accent)" />
+          </div>
           <h2>Project Not Found</h2>
           <p>The interior design project you are looking for does not exist or has been moved.</p>
           <button
@@ -139,18 +141,19 @@ export default function ProjectCategoriesPage() {
       {/* Categories Grid (Core Navigation Step 2) */}
       <div className="flow-categories-grid">
         {project.categories.length === 0 ? (
-          <div className="flow-empty-state" style={{ gridColumn: '1 / -1', padding: '50px 24px' }}>
-            <Layers size={44} color="#C9A474" />
-            <h3 style={{ fontSize: '1.3rem', marginTop: '12px' }}>No Room Categories Mapped Yet</h3>
-            <p style={{ maxWidth: '540px', margin: '0 auto 20px auto' }}>
+          <div className="flow-empty-state" style={{ gridColumn: '1 / -1' }}>
+            <div className="flow-empty-icon-wrap">
+              <Layers size={38} color="var(--color-accent)" />
+            </div>
+            <h3>No Room Categories Mapped Yet</h3>
+            <p>
               This project does not have any room categories mapped yet. Open the Admin Portal (Form 2: Categories &amp; 2D/3D Images Mapping) to add room spaces like Kitchen, Master Bedroom, Living Room, etc.
             </p>
             <a
               href="#admin"
               className="btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}
             >
-              <Plus size={16} />
+              <Plus size={18} />
               <span>Map Categories &amp; 2D/3D Images</span>
             </a>
           </div>
