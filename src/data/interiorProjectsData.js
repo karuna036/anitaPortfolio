@@ -3,10 +3,6 @@
  * Core Concept: Project → Multiple Categories → Multiple 2D & 3D Images
  */
 
-// Default published projects loaded for all visitors worldwide
-export const publishedInteriorProjects = sampleShowcaseProjects;
-export const interiorProjects = sampleShowcaseProjects;
-
 // Optional sample showcase projects for demo reload if needed
 export const sampleShowcaseProjects = [
   {
@@ -698,6 +694,10 @@ export const sampleShowcaseProjects = [
     ]
   }
 ];
+
+// Default published projects loaded for all visitors worldwide
+export const publishedInteriorProjects = sampleShowcaseProjects;
+export const interiorProjects = sampleShowcaseProjects;
 
 // Storage Keys for LocalStorage and IndexedDB Persistence
 const STORAGE_INTERIOR_KEY = 'anitha_interior_flow_projects_v4';
