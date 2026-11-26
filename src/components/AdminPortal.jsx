@@ -252,7 +252,7 @@ export default function AdminPortal({ onClose }) {
   // Refresh projects when updated
   const refreshProjects = () => {
     const list = getAllInteriorProjects();
-    setProjects(list);
+    setProjects([...list]);
   };
 
   useEffect(() => {
@@ -409,6 +409,7 @@ export default function AdminPortal({ onClose }) {
       });
 
       if (created) {
+        setProjects(getAllInteriorProjects());
         showToast(
           'success',
           `New Project "${created.title}" created with ${initialCatsToMap.length} categories mapped! Ready to upload 2D CAD & 3D renders in Form 2.`
@@ -427,6 +428,7 @@ export default function AdminPortal({ onClose }) {
   const handleDeleteProject = (projectId, projectTitle) => {
     if (window.confirm(`Are you sure you want to delete project "${projectTitle}" and all its mapped categories?`)) {
       deleteInteriorProject(projectId);
+      setProjects(getAllInteriorProjects());
       showToast('info', `Project "${projectTitle}" deleted.`);
     }
   };
@@ -540,6 +542,7 @@ export default function AdminPortal({ onClose }) {
 
     const updated = batchAddCategoriesToProject(currentSelectedProject.id, categoriesToAdd);
     if (updated) {
+      setProjects(getAllInteriorProjects());
       showToast(
         'success',
         `Successfully added ${categoriesToAdd.length} categories to "${currentSelectedProject.title}"!`
@@ -894,6 +897,8 @@ export default function AdminPortal({ onClose }) {
 
     const updated = saveCategoryWithImages(selectedProjectId, categoryDataToSave);
     if (updated) {
+      const refreshedList = getAllInteriorProjects();
+      setProjects([...refreshedList]);
       showToast(
         'success',
         `Category "${categoryDataToSave.name}" with ${mapped2DImages.length} 2D plans and ${mapped3DImages.length} 3D renders successfully saved to project!`
@@ -909,6 +914,7 @@ export default function AdminPortal({ onClose }) {
   const handleDeleteCategory = (catId, catName) => {
     if (window.confirm(`Are you sure you want to delete category "${catName}" from ${currentSelectedProject?.title}?`)) {
       deleteCategoryFromProject(selectedProjectId, catId);
+      setProjects(getAllInteriorProjects());
       showToast('info', `Category "${catName}" deleted from project.`);
     }
   };
