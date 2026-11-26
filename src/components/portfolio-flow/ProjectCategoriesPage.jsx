@@ -166,7 +166,10 @@ export default function ProjectCategoriesPage() {
             <div
               key={category.id}
               className="flow-category-card"
-              onClick={() => navigate(`/project/${project.id}/category/${category.id}`)}
+              onClick={() => {
+                navigate(`/project/${project.id}/category/${category.id}`);
+                window.scrollTo({ top: 0, behavior: 'instant' });
+              }}
             >
               {/* Category Cover Preview */}
               <div className="flow-category-thumb-box">
@@ -228,6 +231,7 @@ export default function ProjectCategoriesPage() {
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/project/${project.id}/category/${category.id}`);
+                      window.scrollTo({ top: 0, behavior: 'instant' });
                     }}
                   >
                     <span>Open Gallery</span>

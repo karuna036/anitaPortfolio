@@ -754,7 +754,13 @@ export function getInteriorProjectById(projectId) {
   if (!projectId) return null;
   const list = getAllInteriorProjects();
   const cleanId = String(projectId).trim().toLowerCase();
-  return list.find((p) => String(p.id).trim().toLowerCase() === cleanId) || null;
+  return (
+    list.find(
+      (p) =>
+        String(p.id).trim().toLowerCase() === cleanId ||
+        String(p.title).trim().toLowerCase() === cleanId
+    ) || null
+  );
 }
 
 /**
@@ -764,7 +770,13 @@ export function getCategoryByProjectAndId(projectId, categoryId) {
   const project = getInteriorProjectById(projectId);
   if (!project || !project.categories) return null;
   const cleanCatId = String(categoryId).trim().toLowerCase();
-  return project.categories.find((c) => String(c.id).trim().toLowerCase() === cleanCatId) || null;
+  return (
+    project.categories.find(
+      (c) =>
+        String(c.id).trim().toLowerCase() === cleanCatId ||
+        String(c.name).trim().toLowerCase() === cleanCatId
+    ) || null
+  );
 }
 
 /**
