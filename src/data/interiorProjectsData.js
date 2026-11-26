@@ -882,10 +882,24 @@ export function saveCategoryWithImages(projectId, categoryData) {
   const project = list[projectIndex];
   const categories = project.categories ? [...project.categories] : [];
 
-  const catBaseId = slugify(categoryData.name) || `cat-${Date.now()}`;
-  const targetCatId = categoryData.id || catBaseId;
+  let targetCatId = categoryData.id;
+  let catIndex = -1;
 
-  const catIndex = categories.findIndex((c) => String(c.id).trim().toLowerCase() === String(targetCatId).trim().toLowerCase());
+  if (targetCatId && !categoryData.isNew) {
+    catIndex = categories.findIndex((c) => String(c.id).trim().toLowerCase() === String(targetCatId).trim().toLowerCase());
+  }
+
+  if (catIndex === -1) {
+    // Generate guaranteed unique category ID
+    const baseId = slugify(categoryData.name) || `cat-${Date.now()}`;
+    let uniqueId = baseId;
+    let counter = 1;
+    while (categories.some((c) => String(c.id).toLowerCase() === uniqueId.toLowerCase())) {
+      uniqueId = `${baseId}-${counter}`;
+      counter++;
+    }
+    targetCatId = uniqueId;
+  }
 
   // Formatted category object
   const formattedCategory = {
@@ -934,6 +948,48 @@ export function deleteCategoryFromProject(projectId, categoryId) {
   list[projectIndex] = {
     ...project,
     categories: filteredCategories,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveInteriorProjects(list);
+  return list[projectIndex];
+}
+
+/**
+ * FORM 2: Batch add multiple room categories to a project
+ */
+export function batchAddCategoriesToProject(projectId, categoriesToAdd) {
+  const list = getAllInteriorProjects();
+  const cleanId = String(projectId).trim().toLowerCase();
+  const projectIndex = list.findIndex((p) => String(p.id).trim().toLowerCase() === cleanId);
+  if (projectIndex === -1) return null;
+
+  const project = list[projectIndex];
+  const existingCategories = project.categories ? [...project.categories] : [];
+
+  categoriesToAdd.forEach((cat) => {
+    const baseId = slugify(cat.name) || `cat-${Date.now()}`;
+    let uniqueId = baseId;
+    let counter = 1;
+    while (existingCategories.some((c) => String(c.id).toLowerCase() === uniqueId.toLowerCase())) {
+      uniqueId = `${baseId}-${counter}`;
+      counter++;
+    }
+
+    existingCategories.push({
+      id: uniqueId,
+      name: cat.name,
+      icon: cat.icon || '🏠',
+      dimensions: cat.dimensions || '',
+      description: cat.desc || cat.description || '',
+      coverImage: cat.coverImage || (cat.images && cat.images[0]?.src) || '/assets/kitchen-3d-render-1.jpg',
+      images: Array.isArray(cat.images) ? cat.images : []
+    });
+  });
+
+  list[projectIndex] = {
+    ...project,
+    categories: existingCategories,
     updatedAt: new Date().toISOString()
   };
 

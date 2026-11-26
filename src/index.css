@@ -8653,6 +8653,190 @@ h1, h2, h3, h4, h5, h6 {
   color: #121212;
 }
 
+/* Batch Add Categories Card & Multi-Select (One Project -> Multiple Categories) */
+.batch-add-categories-card {
+  background: rgba(201, 164, 116, 0.08);
+  border: 1px dashed rgba(201, 164, 116, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.batch-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.batch-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-accent-light);
+}
+
+.batch-actions-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.btn-text-sm {
+  background: none;
+  border: none;
+  color: var(--color-accent-light);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.btn-text-sm:hover {
+  color: #FFFFFF;
+}
+
+.batch-presets-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.batch-preset-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FAF7F2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.batch-preset-pill:hover {
+  border-color: var(--color-accent);
+  background: rgba(201, 164, 116, 0.15);
+}
+
+.batch-preset-pill.checked {
+  background: rgba(201, 164, 116, 0.25);
+  border-color: var(--color-accent);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(197, 155, 95, 0.25);
+}
+
+.batch-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.btn-batch-add {
+  padding: 8px 18px !important;
+  font-size: 0.78rem !important;
+  min-height: 38px !important;
+}
+
+/* Active Category Status Banner */
+.active-category-status-banner {
+  margin-bottom: 16px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.status-badge.new {
+  background: rgba(201, 164, 116, 0.15);
+  border: 1px solid rgba(201, 164, 116, 0.4);
+  color: #FAF7F2;
+}
+
+.status-badge.new b {
+  color: var(--color-accent-light);
+}
+
+.status-badge.edit {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #C0B7AF;
+}
+
+.status-badge.edit b {
+  color: #FFFFFF;
+}
+
+/* Initial Categories Group in Form 1 */
+.initial-categories-group {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(201, 164, 116, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin: 12px 0 16px 0;
+}
+
+.initial-cat-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.initial-cat-chips-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.initial-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FAF7F2;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.initial-cat-chip:hover {
+  background: rgba(201, 164, 116, 0.15);
+  border-color: var(--color-accent);
+}
+
+.initial-cat-chip.selected {
+  background: var(--color-accent-gradient);
+  border-color: var(--color-accent);
+  color: #0F0D0B;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(197, 155, 95, 0.3);
+}
+
 .room-presets-picker-strip {
   display: flex;
   align-items: center;

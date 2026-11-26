@@ -43,6 +43,7 @@ import {
   updateInteriorProject,
   deleteInteriorProject,
   saveCategoryWithImages,
+  batchAddCategoriesToProject,
   deleteCategoryFromProject,
   resetInteriorProjectsToDefault,
   clearAllInteriorProjects,
@@ -191,6 +192,7 @@ export default function AdminPortal({ onClose }) {
   // FORM 1: Project Create/Edit Form State
   const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState(null);
+  const [projectInitialCategories, setProjectInitialCategories] = useState(['Kitchen', 'Master Bedroom', 'Living Room']);
   const [projectFormData, setProjectFormData] = useState({
     title: '',
     location: '',
@@ -205,6 +207,7 @@ export default function AdminPortal({ onClose }) {
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [isCreatingNewCategory, setIsCreatingNewCategory] = useState(false);
+  const [batchSelectedPresets, setBatchSelectedPresets] = useState([]);
 
   // Category Edit Fields
   const [categoryFormData, setCategoryFormData] = useState({
@@ -300,11 +303,15 @@ export default function AdminPortal({ onClose }) {
   // Sync Form 2 category when current project or category ID changes
   useEffect(() => {
     if (!currentSelectedProject) return;
+    if (isCreatingNewCategory) return; // Preserve active new category creation
+
     const cats = currentSelectedProject.categories || [];
 
     if (cats.length > 0) {
       const match = cats.find((c) => String(c.id) === String(selectedCategoryId)) || cats[0];
-      setSelectedCategoryId(match.id);
+      if (selectedCategoryId !== match.id) {
+        setSelectedCategoryId(match.id);
+      }
       setCategoryFormData({
         id: match.id,
         name: match.name,
@@ -318,7 +325,6 @@ export default function AdminPortal({ onClose }) {
       const allImgs = match.images || [];
       setMapped2DImages(allImgs.filter((img) => img.type === '2D'));
       setMapped3DImages(allImgs.filter((img) => img.type === '3D'));
-      setIsCreatingNewCategory(false);
     } else {
       // Project has no categories yet
       setSelectedCategoryId('');
@@ -334,7 +340,7 @@ export default function AdminPortal({ onClose }) {
       setMapped3DImages([]);
       setIsCreatingNewCategory(true);
     }
-  }, [currentSelectedProject, selectedCategoryId]);
+  }, [currentSelectedProject, selectedCategoryId, isCreatingNewCategory]);
 
   // =========================================================================
   // FORM 1: PROJECT CRUD HANDLERS
@@ -342,6 +348,7 @@ export default function AdminPortal({ onClose }) {
 
   const handleOpenCreateProject = () => {
     setEditingProjectId(null);
+    setProjectInitialCategories(['Kitchen', 'Master Bedroom', 'Living Room']);
     setProjectFormData({
       title: '',
       location: 'Al Ain, UAE',
@@ -383,13 +390,36 @@ export default function AdminPortal({ onClose }) {
         setIsProjectFormOpen(false);
       }
     } else {
-      // Create
-      const created = createInteriorProject(projectFormData);
+      // Create Project with selected initial room categories (One Project -> Multiple Categories)
+      const initialCatsToMap = ROOM_PRESETS.filter((p) =>
+        projectInitialCategories.includes(p.name)
+      ).map((preset) => ({
+        id: slugify(preset.name),
+        name: preset.name,
+        icon: preset.icon,
+        description: preset.desc,
+        dimensions: preset.name === 'Kitchen' ? '2,285mm × 2,675mm' : '5,400mm × 4,200mm',
+        coverImage: '/assets/kitchen-3d-render-1.jpg',
+        images: []
+      }));
+
+      const created = createInteriorProject({
+        ...projectFormData,
+        categories: initialCatsToMap
+      });
+
       if (created) {
-        showToast('success', `New Project "${created.title}" created successfully! Now map categories & images.`);
+        showToast(
+          'success',
+          `New Project "${created.title}" created with ${initialCatsToMap.length} categories mapped! Ready to upload 2D CAD & 3D renders in Form 2.`
+        );
         setIsProjectFormOpen(false);
-        // Pre-select in Form 2
+        // Pre-select this project in Form 2
         setSelectedProjectId(created.id);
+        if (initialCatsToMap.length > 0) {
+          setSelectedCategoryId(initialCatsToMap[0].id);
+        }
+        setActiveTab('form2-categories');
       }
     }
   };
@@ -445,14 +475,84 @@ export default function AdminPortal({ onClose }) {
   // FORM 2: CATEGORIES & 2D/3D IMAGES MAPPING HANDLERS
   // =========================================================================
 
-  // Handle Preset Room Click
+  // Handle Preset Room Click in Form 2
   const handleSelectRoomPreset = (preset) => {
-    setCategoryFormData((prev) => ({
-      ...prev,
+    const existingCats = currentSelectedProject?.categories || [];
+    const existingMatch = existingCats.find(
+      (c) => c.name.toLowerCase() === preset.name.toLowerCase()
+    );
+
+    if (existingMatch) {
+      // Switch to editing this existing category
+      setIsCreatingNewCategory(false);
+      setSelectedCategoryId(existingMatch.id);
+      setCategoryFormData({
+        id: existingMatch.id,
+        name: existingMatch.name,
+        icon: existingMatch.icon,
+        dimensions: existingMatch.dimensions || '',
+        description: existingMatch.description || '',
+        coverImage: existingMatch.coverImage || ''
+      });
+      const allImgs = existingMatch.images || [];
+      setMapped2DImages(allImgs.filter((img) => img.type === '2D'));
+      setMapped3DImages(allImgs.filter((img) => img.type === '3D'));
+      showToast('info', `Switched to existing room: "${existingMatch.name}".`);
+    } else {
+      // Prepare to add a brand new category to this project
+      setIsCreatingNewCategory(true);
+      setSelectedCategoryId('');
+      setCategoryFormData({
+        id: '',
+        name: preset.name,
+        icon: preset.icon,
+        dimensions: preset.name === 'Kitchen' ? '2,285mm × 2,675mm' : '5,400mm × 4,200mm',
+        description: preset.desc || '',
+        coverImage: '/assets/kitchen-3d-render-1.jpg'
+      });
+      setMapped2DImages([]);
+      setMapped3DImages([]);
+      showToast('info', `Selected new room space: "${preset.name}". Upload 2D plans and 3D renders below, then click Save!`);
+    }
+  };
+
+  // Batch Add Multiple Categories to Current Project
+  const handleBatchAddCategories = () => {
+    if (!currentSelectedProject) {
+      showToast('error', 'Please select a project first.');
+      return;
+    }
+    if (batchSelectedPresets.length === 0) {
+      showToast('error', 'Please select at least one room category to add.');
+      return;
+    }
+
+    const categoriesToAdd = ROOM_PRESETS.filter((p) =>
+      batchSelectedPresets.includes(p.name)
+    ).map((preset) => ({
       name: preset.name,
       icon: preset.icon,
-      description: prev.description || preset.desc
+      dimensions: preset.name === 'Kitchen' ? '2,285mm × 2,675mm' : '5,400mm × 4,200mm',
+      description: preset.desc,
+      coverImage: '/assets/kitchen-3d-render-1.jpg',
+      images: []
     }));
+
+    const updated = batchAddCategoriesToProject(currentSelectedProject.id, categoriesToAdd);
+    if (updated) {
+      showToast(
+        'success',
+        `Successfully added ${categoriesToAdd.length} categories to "${currentSelectedProject.title}"!`
+      );
+      setBatchSelectedPresets([]);
+      const firstNew = updated.categories?.find((c) =>
+        categoriesToAdd.some((cta) => cta.name.toLowerCase() === c.name.toLowerCase())
+      );
+      if (firstNew) {
+        setSelectedCategoryId(firstNew.id);
+        setIsCreatingNewCategory(false);
+      }
+    }
   };
 
   // Category Cover Upload
@@ -769,14 +869,27 @@ export default function AdminPortal({ onClose }) {
 
     const combinedImages = [...mapped3DImages, ...mapped2DImages];
 
+    let uniqueCatId = categoryFormData.id;
+    if (isCreatingNewCategory || !uniqueCatId) {
+      const baseSlug = slugify(categoryFormData.name) || `cat-${Date.now()}`;
+      uniqueCatId = baseSlug;
+      let counter = 1;
+      const existingCats = currentSelectedProject?.categories || [];
+      while (existingCats.some((c) => c.id.toLowerCase() === uniqueCatId.toLowerCase())) {
+        uniqueCatId = `${baseSlug}-${counter}`;
+        counter++;
+      }
+    }
+
     const categoryDataToSave = {
-      id: isCreatingNewCategory ? slugify(categoryFormData.name) : categoryFormData.id,
+      id: uniqueCatId,
       name: categoryFormData.name.trim(),
       icon: categoryFormData.icon || '🏠',
       dimensions: categoryFormData.dimensions || '',
       description: categoryFormData.description || '',
       coverImage: categoryFormData.coverImage || (combinedImages[0]?.src) || '/assets/kitchen-3d-render-1.jpg',
-      images: combinedImages
+      images: combinedImages,
+      isNew: isCreatingNewCategory
     };
 
     const updated = saveCategoryWithImages(selectedProjectId, categoryDataToSave);
@@ -1165,6 +1278,76 @@ export default function AdminPortal({ onClose }) {
                     </div>
                   </div>
 
+                  {/* Initial Categories Multi-Select for New Project (One Project -> Multiple Categories) */}
+                  {!editingProjectId && (
+                    <div className="form-group initial-categories-group">
+                      <div className="initial-cat-header-row">
+                        <div>
+                          <label className="section-label" style={{ fontWeight: 700, color: 'var(--color-accent-light)', display: 'block', marginBottom: '4px' }}>
+                            Map Room Categories to this Project (One Project &rarr; Multiple Categories)
+                          </label>
+                          <p className="field-hint" style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                            Select all room spaces included in this project. You will upload 2D CAD floor plans and 3D CGI renders for each room in Form 2.
+                          </p>
+                        </div>
+                        <div className="cat-quick-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            className="btn-text-sm"
+                            onClick={() => setProjectInitialCategories(ROOM_PRESETS.map((r) => r.name))}
+                            style={{ color: 'var(--color-accent)', fontSize: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                          >
+                            Select All ({ROOM_PRESETS.length})
+                          </button>
+                          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>&bull;</span>
+                          <button
+                            type="button"
+                            className="btn-text-sm"
+                            onClick={() => setProjectInitialCategories([])}
+                            style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="initial-cat-chips-grid">
+                        {ROOM_PRESETS.map((preset) => {
+                          const isSelected = projectInitialCategories.includes(preset.name);
+                          return (
+                            <button
+                              key={preset.name}
+                              type="button"
+                              className={`initial-cat-chip ${isSelected ? 'selected' : ''}`}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setProjectInitialCategories(
+                                    projectInitialCategories.filter((c) => c !== preset.name)
+                                  );
+                                } else {
+                                  setProjectInitialCategories([...projectInitialCategories, preset.name]);
+                                }
+                              }}
+                            >
+                              <span className="cat-chip-icon">{preset.icon}</span>
+                              <span className="cat-chip-name">{preset.name}</span>
+                              {isSelected && <Check size={13} className="cat-chip-check" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="selected-cat-summary" style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                        <span>Selected to Map: <b style={{ color: '#FFFFFF' }}>{projectInitialCategories.length} Categories</b></span>
+                        {projectInitialCategories.length > 0 && (
+                          <span style={{ marginLeft: '6px', color: 'var(--color-accent-light)' }}>
+                            ({projectInitialCategories.join(', ')})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="drawer-actions">
                     <button type="submit" className="btn-primary">
                       <Check size={16} />
@@ -1442,7 +1625,7 @@ export default function AdminPortal({ onClose }) {
             <div className="admin-mapping-step-box">
               <div className="step-badge-indicator">
                 <span className="step-num">Step 2</span>
-                <span className="step-label">Room Category for {currentSelectedProject?.title}</span>
+                <span className="step-label">Room Categories for {currentSelectedProject?.title} ({currentSelectedProject?.categories?.length || 0} Mapped)</span>
               </div>
 
               {/* Category Pills Selector Bar */}
@@ -1474,24 +1657,113 @@ export default function AdminPortal({ onClose }) {
                     setSelectedCategoryId('');
                     setCategoryFormData({
                       id: '',
-                      name: 'Master Bedroom',
-                      icon: '🛏️',
-                      dimensions: '5,400mm × 4,200mm',
-                      description: 'Master bedroom suite with fluted wall paneling, king upholstered bed, and ambient cove lighting.',
+                      name: '',
+                      icon: '🏠',
+                      dimensions: '',
+                      description: '',
                       coverImage: '/assets/kitchen-3d-render-1.jpg'
                     });
                     setMapped2DImages([]);
                     setMapped3DImages([]);
+                    showToast('info', 'New category form opened. Enter room details and upload 2D/3D images below.');
                   }}
                 >
                   <Plus size={14} />
-                  <span>Add New Category</span>
+                  <span>+ Add Another Category</span>
                 </button>
+              </div>
+
+              {/* Batch Add Multiple Categories Panel (One Project -> Multiple Categories) */}
+              {(() => {
+                const existingCatNames = (currentSelectedProject?.categories || []).map((c) => c.name.toLowerCase());
+                const unmappedPresets = ROOM_PRESETS.filter((p) => !existingCatNames.includes(p.name.toLowerCase()));
+
+                if (unmappedPresets.length === 0) return null;
+
+                return (
+                  <div className="batch-add-categories-card">
+                    <div className="batch-header-row">
+                      <div className="batch-title">
+                        <Sparkles size={14} color="var(--color-accent)" />
+                        <span>Batch Add Multiple Categories to "{currentSelectedProject?.title}":</span>
+                      </div>
+                      <div className="batch-actions-mini">
+                        <button
+                          type="button"
+                          className="btn-text-sm"
+                          onClick={() => setBatchSelectedPresets(unmappedPresets.map((u) => u.name))}
+                        >
+                          Select All Available ({unmappedPresets.length})
+                        </button>
+                        <span>&bull;</span>
+                        <button
+                          type="button"
+                          className="btn-text-sm"
+                          onClick={() => setBatchSelectedPresets([])}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="batch-presets-chips-row">
+                      {unmappedPresets.map((preset) => {
+                        const isChecked = batchSelectedPresets.includes(preset.name);
+                        return (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            className={`batch-preset-pill ${isChecked ? 'checked' : ''}`}
+                            onClick={() => {
+                              if (isChecked) {
+                                setBatchSelectedPresets(batchSelectedPresets.filter((b) => b !== preset.name));
+                              } else {
+                                setBatchSelectedPresets([...batchSelectedPresets, preset.name]);
+                              }
+                            }}
+                          >
+                            <span>{preset.icon}</span>
+                            <span>{preset.name}</span>
+                            {isChecked && <Check size={12} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {batchSelectedPresets.length > 0 && (
+                      <div className="batch-submit-row">
+                        <button
+                          type="button"
+                          className="btn-primary btn-batch-add"
+                          onClick={handleBatchAddCategories}
+                        >
+                          <Plus size={15} />
+                          <span>Add {batchSelectedPresets.length} Selected Categories to "{currentSelectedProject?.title}"</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Active Category Status Bar */}
+              <div className="active-category-status-banner">
+                {isCreatingNewCategory ? (
+                  <div className="status-badge new">
+                    <Sparkles size={14} />
+                    <span><b>Creating NEW Category</b> for {currentSelectedProject?.title} (Fill details below and save)</span>
+                  </div>
+                ) : (
+                  <div className="status-badge edit">
+                    <Layers size={14} />
+                    <span>Managing <b>{categoryFormData.icon} {categoryFormData.name}</b> &bull; Total Deliverables: <b>{mapped2DImages.length + mapped3DImages.length}</b> ({mapped3DImages.length} 3D Renders, {mapped2DImages.length} 2D CAD Plans)</span>
+                  </div>
+                )}
               </div>
 
               {/* Quick Room Presets Picker */}
               <div className="room-presets-picker-strip">
-                <span className="presets-intro-label">Quick Room Presets:</span>
+                <span className="presets-intro-label">One-Click Room Presets:</span>
                 <div className="presets-pill-chips">
                   {ROOM_PRESETS.map((preset) => (
                     <button
@@ -1499,6 +1771,7 @@ export default function AdminPortal({ onClose }) {
                       type="button"
                       className={`preset-chip-btn ${categoryFormData.name === preset.name ? 'current' : ''}`}
                       onClick={() => handleSelectRoomPreset(preset)}
+                      title={`Click to switch to or create ${preset.name}`}
                     >
                       <span>{preset.icon}</span>
                       <span>{preset.name}</span>
