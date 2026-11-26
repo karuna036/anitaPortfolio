@@ -1242,3 +1242,99 @@ export async function fileToBase64(file) {
   return compressImageFile(file);
 }
 
+/**
+ * Safely opens any image (base64 Data URL or standard URL) in full resolution in a new tab.
+ * Circumvents Chrome/Edge/Safari's blocking of top-frame navigation to data: URLs
+ * by converting base64 data to a Blob URL (blob:...), with fallback to a luxury styled window.
+ */
+export function openFullResolutionImage(src, title = 'Full Resolution Image') {
+  if (!src) return;
+
+  // Handle Base64 Data URLs
+  if (typeof src === 'string' && src.startsWith('data:')) {
+    try {
+      const parts = src.split(',');
+      const meta = parts[0] || '';
+      const base64Data = parts[1] || '';
+      const mimeMatch = meta.match(/:(.*?);/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+      const blobUrl = URL.createObjectURL(blob);
+
+      const newWindow = window.open(blobUrl, '_blank');
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        // Fallback viewer if direct blob window was intercepted
+        const fallback = window.open('', '_blank');
+        if (fallback) {
+          fallback.document.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8" />
+                <title>${title} | Anitha Roselin Interior Architecture</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <style>
+                  * { box-sizing: border-box; }
+                  body {
+                    margin: 0;
+                    padding: 20px;
+                    background: #0d0c0b;
+                    color: #FAF8F5;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                  }
+                  img {
+                    max-width: 100%;
+                    max-height: 94vh;
+                    object-fit: contain;
+                    border-radius: 4px;
+                    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.85);
+                  }
+                </style>
+              </head>
+              <body>
+                <img src="${src}" alt="${title}" />
+              </body>
+            </html>
+          `);
+          fallback.document.close();
+        }
+      }
+      return;
+    } catch (err) {
+      console.warn('Blob URL generation exception, using fallback window:', err);
+      const fallback = window.open('', '_blank');
+      if (fallback) {
+        fallback.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>${title}</title>
+              <style>
+                body { margin: 0; background: #0d0c0b; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+                img { max-width: 100%; max-height: 94vh; object-fit: contain; }
+              </style>
+            </head>
+            <body><img src="${src}" alt="${title}" /></body>
+          </html>
+        `);
+        fallback.document.close();
+      }
+      return;
+    }
+  }
+
+  // Standard relative or external HTTP/HTTPS URL
+  window.open(src, '_blank', 'noopener,noreferrer');
+}
+

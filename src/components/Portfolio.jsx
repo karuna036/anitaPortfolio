@@ -224,17 +224,6 @@ export default function Portfolio({ onOpenAdmin }) {
         <div className="section-header" style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <div className="section-tag">Architectural Plans &amp; CGI Visualizations</div>
-            {onOpenAdmin && (
-              <button
-                type="button"
-                onClick={onOpenAdmin}
-                className="admin-quick-pill"
-                title="Open Admin Portal to add or edit projects"
-              >
-                <Lock size={12} />
-                <span>Admin Portal</span>
-              </button>
-            )}
           </div>
           <h2 className="section-title">
             Curated <i>Interior Projects</i>
@@ -486,15 +475,10 @@ export default function Portfolio({ onOpenAdmin }) {
               {projects.length === 0 ? (
                 <div className="portfolio-empty-box" style={{ gridColumn: '1 / -1', padding: '50px 20px', textAlign: 'center' }}>
                   <Compass size={36} color="#C9A474" />
-                  <h4>All Default Projects &amp; Categories Cleared</h4>
+                  <h4>Architectural Portfolio In Preparation</h4>
                   <p style={{ maxWidth: '480px', margin: '8px auto 18px auto', color: 'var(--color-text-muted)' }}>
-                    All default sample projects have been cleared. Open the Admin Portal to create your custom projects, or explore the multi-category flow above.
+                    Bespoke residential commissions, room categories, 2D working drawings, and 3D CGI visualizations will appear here once published.
                   </p>
-                  {onOpenAdmin && (
-                    <button type="button" className="btn-primary" onClick={onOpenAdmin}>
-                      Open Admin Portal &bull; Create Project
-                    </button>
-                  )}
                 </div>
               ) : filteredProjects.length === 0 ? (
                 <div className="portfolio-empty-box">

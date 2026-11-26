@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { personalInfo, roomProjects } from '../data/portfolioData';
 import { getStoredProjects } from '../services/projectStorage';
+import { openFullResolutionImage } from '../data/interiorProjectsData';
 
 export default function ProjectModal({ project: initialProject, onClose }) {
   // Determine starting room based on initial project
@@ -186,16 +187,16 @@ export default function ProjectModal({ project: initialProject, onClose }) {
 
           {currentMedia && (
             <div style={{ position: 'absolute', top: '14px', right: '14px', display: 'flex', gap: '8px', zIndex: 10 }}>
-              <a
-                href={currentMedia.src}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => openFullResolutionImage(currentMedia.src, currentMedia.title || project.title)}
                 className="modal-zoom-btn"
                 title="Open full resolution image in new tab"
+                style={{ cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 <Maximize2 size={16} />
                 <span>Full Res</span>
-              </a>
+              </button>
               {currentMedia.pdfFile && (
                 <a
                   href={currentMedia.pdfFile}
@@ -429,16 +430,16 @@ export default function ProjectModal({ project: initialProject, onClose }) {
                               <span>View in Showcase</span>
                             </button>
 
-                            <a
-                              href={item.src}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              type="button"
+                              onClick={() => openFullResolutionImage(item.src, item.title)}
                               className="proview-btn-fullres"
                               title="Open Full Resolution Image"
+                              style={{ cursor: 'pointer', fontFamily: 'inherit' }}
                             >
                               <ExternalLink size={13} />
                               <span>Full Res</span>
-                            </a>
+                            </button>
 
                             <a
                               href={inquiryUrl}

@@ -48,24 +48,6 @@ export default function Footer({ onOpenAdmin }) {
               <a href="#education" onClick={(e) => handleScrollTo(e, 'education')} className="footer-link">
                 Education
               </a>
-              {onOpenAdmin && (
-                <button
-                  type="button"
-                  onClick={onOpenAdmin}
-                  className="footer-link"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
-                    textAlign: 'left',
-                    color: 'var(--color-accent-light)',
-                    cursor: 'pointer',
-                    fontWeight: 600
-                  }}
-                >
-                  🔒 Admin Portal
-                </button>
-              )}
             </div>
           </div>
 

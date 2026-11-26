@@ -61,21 +61,36 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       // Support #admin trigger
-      if (window.location.hash.includes('admin')) {
+      if (window.location.hash.toLowerCase().includes('admin')) {
         setIsAdminOpen(true);
       }
     };
 
-    if (window.location.hash.includes('admin')) {
+    if (window.location.hash.toLowerCase().includes('admin')) {
       setIsAdminOpen(true);
     }
 
+    // Discreet admin hotkey for designer (Alt + A or Ctrl + Shift + A)
+    const handleKeyDown = (e) => {
+      if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A'))) {
+        e.preventDefault();
+        setIsAdminOpen((prev) => !prev);
+      }
+    };
+
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleCloseAdmin = () => {
     setIsAdminOpen(false);
+    if (window.location.hash.toLowerCase().includes('admin')) {
+      window.location.hash = '#/';
+    }
   };
 
   const handleOpenAdmin = () => {
@@ -119,6 +134,14 @@ export default function App() {
               <FlowRouteView>
                 <CategoryGalleryPage />
               </FlowRouteView>
+            }
+          />
+
+          {/* Direct Admin Route */}
+          <Route
+            path="/admin"
+            element={
+              <AdminPortal onClose={() => { window.location.hash = '#/'; }} />
             }
           />
 

@@ -12,7 +12,7 @@ import {
   Eye,
   Sliders
 } from 'lucide-react';
-import { getInteriorProjectById, getCategoryByProjectAndId } from '../../data/interiorProjectsData';
+import { getInteriorProjectById, getCategoryByProjectAndId, openFullResolutionImage } from '../../data/interiorProjectsData';
 import ImageLightbox from './ImageLightbox';
 
 export default function CategoryGalleryPage() {
@@ -288,17 +288,18 @@ export default function CategoryGalleryPage() {
                       <span>View in Lightbox</span>
                     </button>
 
-                    <a
-                      href={image.src}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
                       className="flow-card-fullres-link"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openFullResolutionImage(image.src, image.title);
+                      }}
                       title="Open full resolution in new tab"
                     >
                       <ExternalLink size={14} />
                       <span>Full Res</span>
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>

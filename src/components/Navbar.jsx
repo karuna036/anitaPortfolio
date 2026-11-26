@@ -110,17 +110,6 @@ export default function Navbar({ onOpenAdmin }) {
             </nav>
 
             <div className="nav-actions-right">
-              {onOpenAdmin && (
-                <button
-                  type="button"
-                  onClick={onOpenAdmin}
-                  className="nav-admin-pill-btn"
-                  title="Studio Admin Portal (Manage Projects)"
-                >
-                  <Lock size={13} />
-                  <span>Admin</span>
-                </button>
-              )}
               <a
                 href={personalInfo.whatsappUrl}
                 target="_blank"
@@ -181,20 +170,6 @@ export default function Navbar({ onOpenAdmin }) {
         </div>
 
         <div className="mobile-drawer-contact">
-          {onOpenAdmin && (
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAdmin();
-              }}
-              className="btn-outline"
-              style={{ width: '100%', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-            >
-              <Lock size={16} color="var(--color-accent)" />
-              <span>Admin Portal (Manage Projects)</span>
-            </button>
-          )}
           <a
             href={personalInfo.whatsappUrl}
             target="_blank"

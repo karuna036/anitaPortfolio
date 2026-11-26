@@ -145,17 +145,13 @@ export default function ProjectCategoriesPage() {
             <div className="flow-empty-icon-wrap">
               <Layers size={38} color="var(--color-accent)" />
             </div>
-            <h3>No Room Categories Mapped Yet</h3>
+            <h3>Room Spaces Under Preparation</h3>
             <p>
-              This project does not have any room categories mapped yet. Open the Admin Portal (Form 2: Categories &amp; 2D/3D Images Mapping) to add room spaces like Kitchen, Master Bedroom, Living Room, etc.
+              Architectural room categories and drawings for this project are currently being curated and will be available soon.
             </p>
-            <a
-              href="#admin"
-              className="btn-primary"
-            >
-              <Plus size={18} />
-              <span>Map Categories &amp; 2D/3D Images</span>
-            </a>
+            <Link to="/projects" className="btn-outline">
+              ← Return to All Projects
+            </Link>
           </div>
         ) : (
           project.categories.map((category) => {

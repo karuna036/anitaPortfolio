@@ -14,6 +14,7 @@ import {
   Download,
   Info
 } from 'lucide-react';
+import { openFullResolutionImage } from '../../data/interiorProjectsData';
 
 export default function ImageLightbox({
   images,
@@ -244,15 +245,15 @@ export default function ImageLightbox({
               </div>
 
               <div className="lightbox-actions-col">
-                <a
-                  href={currentImage.src}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
                   className="lightbox-fullres-link"
+                  onClick={() => openFullResolutionImage(currentImage.src, currentImage.title)}
+                  style={{ cursor: 'pointer', fontFamily: 'inherit' }}
                 >
                   <Maximize2 size={14} />
                   <span>Open Full Resolution</span>
-                </a>
+                </button>
               </div>
             </div>
           </div>

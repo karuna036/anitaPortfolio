@@ -156,19 +156,12 @@ export default function ProjectsPage() {
         {projects.length === 0 ? (
           <div className="flow-empty-state" style={{ gridColumn: '1 / -1' }}>
             <div className="flow-empty-icon-wrap">
-              <FolderPlus size={38} color="var(--color-accent)" />
+              <Compass size={38} color="var(--color-accent)" />
             </div>
-            <h3>No Interior Design Projects Yet</h3>
+            <h3>Interior Architecture Projects Coming Soon</h3>
             <p>
-              All default sample projects and categories have been deleted. You can now create your own custom residential projects, map room spaces (Kitchen, Bedroom, Living Room, etc.), and upload 2D CAD floor plans and 3D CGI photorealistic renders.
+              Signature luxury residential commissions, bespoke room categories, 2D CAD fabrication drawings, and photorealistic 3D renders are currently being curated and will be showcased here.
             </p>
-            <a
-              href="#admin"
-              className="btn-primary"
-            >
-              <Plus size={18} />
-              <span>Open Admin Portal &bull; Create Project</span>
-            </a>
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="flow-empty-state" style={{ gridColumn: '1 / -1' }}>

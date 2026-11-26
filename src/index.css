@@ -7395,6 +7395,8 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.76rem;
   font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
   transition: all var(--transition-fast);
 }
 
