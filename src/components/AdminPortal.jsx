@@ -27,7 +27,10 @@ import {
   Calendar,
   MapPin,
   ArrowRight,
-  Maximize2
+  Maximize2,
+  Share2,
+  Copy,
+  Download
 } from 'lucide-react';
 import {
   checkAdminAuth,
@@ -49,7 +52,10 @@ import {
   clearAllInteriorProjects,
   loadSampleShowcaseProjects,
   fileToBase64,
-  slugify
+  slugify,
+  exportInteriorProjectsJSON,
+  importInteriorProjectsJSON,
+  downloadProjectsDataFile
 } from '../data/interiorProjectsData';
 
 // Room Presets for Form 2
@@ -265,6 +271,43 @@ export default function AdminPortal({ onClose }) {
   const showToast = (type, message) => {
     setFeedbackToast({ type, message });
     setTimeout(() => setFeedbackToast(null), 4000);
+  };
+
+  // Export & Publish State & Handlers
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  const handleDownloadJSON = () => {
+    downloadProjectsDataFile();
+    showToast('success', 'interiorProjectsData.json downloaded successfully!');
+  };
+
+  const handleCopyJSON = async () => {
+    try {
+      const jsonStr = exportInteriorProjectsJSON();
+      await navigator.clipboard.writeText(jsonStr);
+      showToast('success', 'Full projects JSON copied to clipboard!');
+    } catch (err) {
+      showToast('error', 'Clipboard access denied. Please click "Download JSON File" instead.');
+    }
+  };
+
+  const handleImportFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = importInteriorProjectsJSON(event.target.result);
+      if (result.success) {
+        setProjects([...getAllInteriorProjects()]);
+        showToast('success', `Successfully imported ${result.count} projects from JSON!`);
+        setIsExportModalOpen(false);
+      } else {
+        showToast('error', `Import failed: ${result.error}`);
+      }
+    };
+    reader.onerror = () => showToast('error', 'Failed to read JSON file.');
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   // Login handler
@@ -1129,6 +1172,17 @@ export default function AdminPortal({ onClose }) {
                 <button
                   type="button"
                   className="btn-outline"
+                  onClick={() => setIsExportModalOpen(true)}
+                  style={{ borderColor: 'var(--color-accent)', color: '#FFFFFF', background: 'rgba(201, 164, 116, 0.15)' }}
+                  title="Export and publish projects so other people and visitors can see them"
+                >
+                  <Share2 size={14} color="#C9A474" />
+                  <span>Export &amp; Publish</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-outline"
                   onClick={handleClearAllProjects}
                   title="Delete all projects and categories (Clean Slate)"
                   style={{ borderColor: 'rgba(255, 90, 90, 0.4)', color: '#FFA3A3' }}
@@ -1148,6 +1202,102 @@ export default function AdminPortal({ onClose }) {
                 </button>
               </div>
             </div>
+
+            {/* Export & Publish Modal Drawer */}
+            {isExportModalOpen && (
+              <div className="admin-form-drawer-card" style={{ borderColor: 'var(--color-accent)', background: '#181512' }}>
+                <div className="drawer-header" style={{ borderBottomColor: 'rgba(201, 164, 116, 0.25)' }}>
+                  <div>
+                    <h3 style={{ color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Share2 size={18} color="#C9A474" />
+                      <span>Export &amp; Publish Projects for All Visitors</span>
+                    </h3>
+                    <p className="drawer-sub">
+                      Share your created projects, room categories, 2D CAD plans, and 3D renders with clients, employers, and visitors on any device.
+                    </p>
+                  </div>
+                  <button type="button" className="close-btn" onClick={() => setIsExportModalOpen(false)}>
+                    &times;
+                  </button>
+                </div>
+
+                <div className="drawer-body" style={{ padding: '24px' }}>
+                  <div className="export-options-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                    {/* Option 1: Download JSON */}
+                    <div style={{ background: '#201D1A', border: '1px solid rgba(201, 164, 116, 0.3)', borderRadius: 'var(--radius-sm)', padding: '18px' }}>
+                      <h4 style={{ color: '#FFFFFF', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}>
+                        <Download size={16} color="#C9A474" />
+                        <span>1. Download Projects JSON</span>
+                      </h4>
+                      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', lineHeight: '1.5', marginBottom: '14px' }}>
+                        Download a backup of all {projects.length} projects, categories, 2D drawings, and 3D visualizations as an <code>interiorProjectsData.json</code> file.
+                      </p>
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={handleDownloadJSON}
+                        style={{ width: '100%', justifyContent: 'center' }}
+                      >
+                        <Download size={14} />
+                        <span>Download JSON File</span>
+                      </button>
+                    </div>
+
+                    {/* Option 2: Copy to Clipboard */}
+                    <div style={{ background: '#201D1A', border: '1px solid rgba(201, 164, 116, 0.3)', borderRadius: 'var(--radius-sm)', padding: '18px' }}>
+                      <h4 style={{ color: '#FFFFFF', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}>
+                        <Copy size={16} color="#C9A474" />
+                        <span>2. Copy JSON to Clipboard</span>
+                      </h4>
+                      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', lineHeight: '1.5', marginBottom: '14px' }}>
+                        Copy the entire projects JSON to your clipboard with one click to easily share or paste into your repository code.
+                      </p>
+                      <button
+                        type="button"
+                        className="btn-outline"
+                        onClick={handleCopyJSON}
+                        style={{ width: '100%', justifyContent: 'center' }}
+                      >
+                        <Copy size={14} />
+                        <span>Copy JSON to Clipboard</span>
+                      </button>
+                    </div>
+
+                    {/* Option 3: Import JSON on Another Device */}
+                    <div style={{ background: '#201D1A', border: '1px solid rgba(201, 164, 116, 0.3)', borderRadius: 'var(--radius-sm)', padding: '18px' }}>
+                      <h4 style={{ color: '#FFFFFF', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}>
+                        <Upload size={16} color="#C9A474" />
+                        <span>3. Import from JSON File</span>
+                      </h4>
+                      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', lineHeight: '1.5', marginBottom: '14px' }}>
+                        Switching computers or testing on another device? Upload your downloaded JSON file to immediately restore all projects.
+                      </p>
+                      <label className="btn-outline" style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', display: 'inline-flex' }}>
+                        <Upload size={14} />
+                        <span>Choose JSON File</span>
+                        <input
+                          type="file"
+                          accept=".json,application/json"
+                          onChange={handleImportFile}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Netlify Deploy Guide */}
+                  <div style={{ background: 'rgba(201, 164, 116, 0.08)', border: '1px solid rgba(201, 164, 116, 0.25)', borderRadius: 'var(--radius-sm)', padding: '14px 18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF', fontWeight: 600, marginBottom: '4px', fontSize: '0.88rem' }}>
+                      <Sparkles size={15} color="#C9A474" />
+                      <span>How to Make Projects Show for All Persons on Netlify</span>
+                    </div>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0, lineHeight: '1.6' }}>
+                      The portfolio is now configured to automatically display the official published projects to all visitors worldwide by default. Whenever you download your JSON file, committing it to your GitHub repository triggers Netlify to instantly update the live site for every visitor!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Project Create / Edit Drawer Modal */}
             {isProjectFormOpen && (
@@ -1558,6 +1708,19 @@ export default function AdminPortal({ onClose }) {
                       <span className="p-loc">{currentSelectedProject.location}</span>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => {
+                      setActiveTab('form1-projects');
+                      setIsExportModalOpen(true);
+                    }}
+                    style={{ borderColor: 'var(--color-accent)', color: '#FFFFFF', padding: '6px 12px', fontSize: '0.78rem', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    title="Export and publish projects so other people and visitors can see them"
+                  >
+                    <Share2 size={13} color="#C9A474" />
+                    <span>Export &amp; Publish</span>
+                  </button>
                 </div>
               )}
             </div>

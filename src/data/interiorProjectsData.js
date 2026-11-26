@@ -3,8 +3,9 @@
  * Core Concept: Project → Multiple Categories → Multiple 2D & 3D Images
  */
 
-// Default projects initialized to empty (All default projects and categories deleted)
-export const interiorProjects = [];
+// Default published projects loaded for all visitors worldwide
+export const publishedInteriorProjects = sampleShowcaseProjects;
+export const interiorProjects = sampleShowcaseProjects;
 
 // Optional sample showcase projects for demo reload if needed
 export const sampleShowcaseProjects = [
@@ -798,17 +799,17 @@ if (typeof window !== 'undefined') {
  * Retrieve all projects from cache / localStorage (default is empty [])
  */
 export function getAllInteriorProjects() {
-  if (inMemoryProjects !== null) {
+  if (inMemoryProjects !== null && inMemoryProjects.length > 0) {
     return [...inMemoryProjects];
   }
 
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return [...interiorProjects];
 
   try {
     const stored = localStorage.getItem(STORAGE_INTERIOR_KEY);
     if (stored !== null) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         inMemoryProjects = [...parsed];
         return [...inMemoryProjects];
       }
@@ -817,8 +818,50 @@ export function getAllInteriorProjects() {
     console.warn('Failed to parse interior projects from localStorage:', err);
   }
 
-  inMemoryProjects = [];
-  return [];
+  // Fallback for other visitors/devices where localStorage is uninitialized:
+  // Provide the default published luxury projects so all persons see the portfolio!
+  inMemoryProjects = [...interiorProjects];
+  return [...inMemoryProjects];
+}
+
+/**
+ * Export all current projects as formatted JSON string
+ */
+export function exportInteriorProjectsJSON() {
+  const data = getAllInteriorProjects();
+  return JSON.stringify(data, null, 2);
+}
+
+/**
+ * Import projects from JSON string and save
+ */
+export function importInteriorProjectsJSON(jsonString) {
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!Array.isArray(parsed)) {
+      throw new Error('Imported data must be an array of projects.');
+    }
+    saveInteriorProjects(parsed);
+    return { success: true, count: parsed.length, projects: parsed };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Trigger browser file download of interiorProjectsData.json
+ */
+export function downloadProjectsDataFile() {
+  const jsonStr = exportInteriorProjectsJSON();
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `interiorProjectsData-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /**
