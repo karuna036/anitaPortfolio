@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { getStoredProjects, getStoredCategories } from '../services/projectStorage';
 import ProjectModal from './ProjectModal';
+import { normalizeAssetUrl } from '../data/interiorProjectsData';
 
 // Architectural Project Map Key Plan Zones
 const PROJECT_MAP_ZONES = [
@@ -31,8 +32,8 @@ const PROJECT_MAP_ZONES = [
     shortName: 'Modular Kitchen',
     icon: '🍳',
     dim: '2,285 mm × 2,675 mm',
-    image: '/assets/kitchen-3d-render-1.jpg',
-    secondaryImg: '/assets/kitchen-2d-plan-page1.png',
+    image: normalizeAssetUrl('/assets/kitchen-3d-render-1.jpg'),
+    secondaryImg: normalizeAssetUrl('/assets/kitchen-2d-plan-page1.png'),
     badge: 'Modular Kitchen Plan',
     specs: 'High-Gloss Champagne · Tandem Drawers · Corner Carousel · Black Granite Worktop',
     cadSheets: '3 CAD Sheets (Page 1-3)',
@@ -46,8 +47,8 @@ const PROJECT_MAP_ZONES = [
     shortName: 'Master Bedroom TV',
     icon: '🛏️',
     dim: '1,335 mm Console · 1,080 mm Wardrobe Wall',
-    image: '/assets/master-bedroom-tv-3d-render.jpg',
-    secondaryImg: '/assets/master-bedroom-tv-page6.jpg',
+    image: normalizeAssetUrl('/assets/master-bedroom-tv-3d-render.jpg'),
+    secondaryImg: normalizeAssetUrl('/assets/master-bedroom-tv-page6.jpg'),
     badge: 'Master Bedroom Plan',
     specs: 'Malmok Natal Walnut · Natural Reed Textured Panels · LED Halo Cove Backlit Wall',
     cadSheets: '1 CAD Sheet (Page 6)',
@@ -61,8 +62,8 @@ const PROJECT_MAP_ZONES = [
     shortName: 'Crockery Unit',
     icon: '🍽️',
     dim: '900 mm W × 450 mm D × 2,110 mm H',
-    image: '/assets/crockery-3d-render.jpg',
-    secondaryImg: '/assets/kitchen-crockery-page4.png',
+    image: normalizeAssetUrl('/assets/crockery-3d-render.jpg'),
+    secondaryImg: normalizeAssetUrl('/assets/kitchen-crockery-page4.png'),
     badge: 'Crockery Joinery',
     specs: 'Royal Blue PU Finish · 18mm Nice Wood Counter · Antique Button Pulls · Glass Shelves',
     cadSheets: '1 CAD Sheet (Page 4)',
@@ -76,8 +77,8 @@ const PROJECT_MAP_ZONES = [
     shortName: 'Living Vanity',
     icon: '🪞',
     dim: '745 mm W × 350 mm D · 600 × 1,000 mm Mirror',
-    image: '/assets/living-vanity-3d-render.jpg',
-    secondaryImg: '/assets/living-vanity-page5.png',
+    image: normalizeAssetUrl('/assets/living-vanity-3d-render.jpg'),
+    secondaryImg: normalizeAssetUrl('/assets/living-vanity-page5.png'),
     badge: 'Living Vanity',
     specs: 'Crockery Blue PU Skirting · 21054 SF Light Beige Doors · Hadid SQ M Black Handles',
     cadSheets: '1 CAD Sheet (Page 5)',

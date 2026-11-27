@@ -695,9 +695,42 @@ export const sampleShowcaseProjects = [
   }
 ];
 
+const BASE = import.meta.env.BASE_URL || '/';
+const basePrefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+
+/**
+ * Normalizes asset URLs to respect Vite base path (e.g. /anitaPortfolio/ on GitHub Pages)
+ */
+export function normalizeAssetUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  if (url.startsWith('/assets/')) {
+    return `${basePrefix}${url}`;
+  }
+  return url;
+}
+
+export function sanitizeProjectAssets(project) {
+  if (!project) return project;
+  return {
+    ...project,
+    coverImage: normalizeAssetUrl(project.coverImage),
+    categories: (project.categories || []).map((cat) => ({
+      ...cat,
+      coverImage: normalizeAssetUrl(cat.coverImage),
+      images: (cat.images || []).map((img) => ({
+        ...img,
+        src: normalizeAssetUrl(img.src)
+      }))
+    }))
+  };
+}
+
 // Default published projects loaded for all visitors worldwide
-export const publishedInteriorProjects = sampleShowcaseProjects;
-export const interiorProjects = sampleShowcaseProjects;
+export const publishedInteriorProjects = sampleShowcaseProjects.map(sanitizeProjectAssets);
+export const interiorProjects = publishedInteriorProjects;
 
 // Storage Keys for LocalStorage and IndexedDB Persistence
 const STORAGE_INTERIOR_KEY = 'anitha_interior_flow_projects_v4';
@@ -800,17 +833,17 @@ if (typeof window !== 'undefined') {
  */
 export function getAllInteriorProjects() {
   if (inMemoryProjects !== null && inMemoryProjects.length > 0) {
-    return [...inMemoryProjects];
+    return inMemoryProjects.map(sanitizeProjectAssets);
   }
 
-  if (typeof window === 'undefined') return [...interiorProjects];
+  if (typeof window === 'undefined') return interiorProjects.map(sanitizeProjectAssets);
 
   try {
     const stored = localStorage.getItem(STORAGE_INTERIOR_KEY);
     if (stored !== null) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        inMemoryProjects = [...parsed];
+        inMemoryProjects = parsed.map(sanitizeProjectAssets);
         return [...inMemoryProjects];
       }
     }
@@ -820,7 +853,7 @@ export function getAllInteriorProjects() {
 
   // Fallback for other visitors/devices where localStorage is uninitialized:
   // Provide the default published luxury projects so all persons see the portfolio!
-  inMemoryProjects = [...interiorProjects];
+  inMemoryProjects = interiorProjects.map(sanitizeProjectAssets);
   return [...inMemoryProjects];
 }
 

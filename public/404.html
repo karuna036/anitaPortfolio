@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Anitha Roselin S | Interior Designer & 3D Visualizer</title>
+    <script>
+      // Single Page App redirect for GitHub Pages project sites
+      (function() {
+        var path = window.location.pathname;
+        var repo = '/anitaPortfolio';
+        if (path.indexOf(repo) === 0) {
+          var route = path.slice(repo.length);
+          if (route && route !== '/' && route.indexOf('/#') !== 0) {
+            window.location.replace(repo + '/#' + route + window.location.search + window.location.hash);
+          } else {
+            window.location.replace(repo + '/');
+          }
+        } else {
+          window.location.replace('/');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to Anitha Roselin Portfolio...</p>
+  </body>
+</html>

@@ -1,3 +1,13 @@
+const BASE = import.meta.env.BASE_URL || '/';
+const basePrefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+
+export function withBase(path) {
+  if (!path || typeof path !== 'string') return path;
+  if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
+  if (path.startsWith('/assets/')) return `${basePrefix}${path}`;
+  return path;
+}
+
 export const personalInfo = {
   name: "Anitha Roselin S",
   title: "Interior Designer & 3D Visualization Specialist",
@@ -7,7 +17,7 @@ export const personalInfo = {
   email: "anitharose2210@gmail.com",
   phone: "+971 56 933 4264",
   phoneFormatted: "+971 56 933 4264",
-  profileImage: "/assets/anitha-profile.jpg",
+  profileImage: withBase("/assets/anitha-profile.jpg"),
   whatsappUrl: "https://wa.me/971569334264?text=Hello%20Anitha,%20I%20would%20like%20to%20discuss%20an%20interior%20design%20project.",
   about: `Interior Designer with 4 years of experience specializing in high-end residential interior design, spatial planning, and photorealistic 3D visualization. Proficient in translating architectural concepts into aesthetically striking, functional living environments through comprehensive 2D technical drawings, detailed elevations, and immersive CGI renderings. Dedicated to elevating residential lifestyle spaces through tactile material palettes, thoughtful lighting, and seamless client coordination from concept to delivery.`,
   heroIntro: "Transforming residential visions into refined, bespoke sanctuaries. With 4 years of expertise spanning Chennai and the UAE, I craft harmonious spaces balanced between aesthetic luxury and purposeful functionality."
