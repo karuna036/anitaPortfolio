@@ -56,45 +56,31 @@ function FlowRouteView({ children }) {
 }
 
 export default function App() {
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-
   useEffect(() => {
-    const handleHashChange = () => {
-      // Support #admin trigger
-      if (window.location.hash.toLowerCase().includes('admin')) {
-        setIsAdminOpen(true);
-      }
-    };
-
-    if (window.location.hash.toLowerCase().includes('admin')) {
-      setIsAdminOpen(true);
-    }
-
     // Discreet admin hotkey for designer (Alt + A or Ctrl + Shift + A)
     const handleKeyDown = (e) => {
       if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A'))) {
         e.preventDefault();
-        setIsAdminOpen((prev) => !prev);
+        if (window.location.hash.toLowerCase().includes('admin')) {
+          window.location.hash = '#/';
+        } else {
+          window.location.hash = '#/admin';
+        }
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
-  const handleCloseAdmin = () => {
-    setIsAdminOpen(false);
-    if (window.location.hash.toLowerCase().includes('admin')) {
-      window.location.hash = '#/';
-    }
+  const handleOpenAdmin = () => {
+    window.location.hash = '#/admin';
   };
 
-  const handleOpenAdmin = () => {
-    setIsAdminOpen(true);
+  const handleCloseAdmin = () => {
+    window.location.hash = '#/';
   };
 
   return (
@@ -137,11 +123,11 @@ export default function App() {
             }
           />
 
-          {/* Direct Admin Route */}
+          {/* Direct Admin Route (Single Source of Truth) */}
           <Route
             path="/admin"
             element={
-              <AdminPortal onClose={() => { window.location.hash = '#/'; }} />
+              <AdminPortal onClose={handleCloseAdmin} />
             }
           />
 
@@ -151,11 +137,6 @@ export default function App() {
 
         <Footer onOpenAdmin={handleOpenAdmin} />
         <FloatingActions />
-
-        {/* Admin Portal Overlay */}
-        {isAdminOpen && (
-          <AdminPortal onClose={handleCloseAdmin} />
-        )}
       </div>
     </Router>
   );

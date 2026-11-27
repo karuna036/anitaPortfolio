@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "publish:projects": "git add src/data/interiorProjectsData.json && git commit -m \"update: publish interior projects from local admin\" && git push origin main"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

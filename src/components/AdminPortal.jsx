@@ -275,6 +275,35 @@ export default function AdminPortal({ onClose }) {
 
   // Export & Publish State & Handlers
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isSavingToCode, setIsSavingToCode] = useState(false);
+
+  const isLocalEnvironment =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.startsWith('192.168.'));
+
+  const handleSaveDirectlyToCode = async () => {
+    setIsSavingToCode(true);
+    try {
+      const currentProjects = getAllInteriorProjects();
+      const res = await fetch('/api/save-projects-to-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentProjects)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('success', `Saved ${data.count} projects directly into src/data/interiorProjectsData.json! Run "npm run publish:projects" or push to deploy to live site.`);
+      } else {
+        throw new Error(data.error || 'Failed to save');
+      }
+    } catch (err) {
+      showToast('error', `Could not save directly to code file: ${err.message}`);
+    } finally {
+      setIsSavingToCode(false);
+    }
+  };
 
   const handleDownloadJSON = () => {
     downloadProjectsDataFile();
@@ -985,16 +1014,53 @@ export default function AdminPortal({ onClose }) {
       <div className="admin-portal-wrapper">
         <div className="admin-login-overlay">
           <div className="admin-login-card">
+            <button
+              type="button"
+              onClick={onClose}
+              className="admin-close-login"
+              title="Close Admin Modal"
+            >
+              <X size={20} />
+            </button>
+
             <div className="admin-login-header">
-              <div className="admin-lock-icon">
-                <Shield size={32} color="#C9A474" />
+              <div className="admin-icon-pill">
+                <Shield size={26} color="#C9A474" />
               </div>
               <h2 className="admin-login-title">Interior Design Admin</h2>
-              <p className="admin-login-subtitle">
-                Access the two-step architecture management portal:
+              <p className="admin-login-desc">
+                Two-step architecture management portal:
                 <br />
                 <b>Form 1: Projects CRUD</b> &bull; <b>Form 2: Categories &amp; 2D/3D Images Mapping</b>
               </p>
+            </div>
+
+            {/* Default Admin Credentials Banner with One-Click Fill */}
+            <div className="admin-default-user-banner">
+              <div className="banner-title-line">
+                <Sparkles size={14} />
+                <span>Default Admin Credentials</span>
+              </div>
+              <div className="banner-creds-grid">
+                <div>
+                  <span className="cred-label">Username</span>
+                  <span className="cred-val">admin</span>
+                </div>
+                <div>
+                  <span className="cred-label">Password</span>
+                  <span className="cred-val">admin123</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-quick-login"
+                onClick={() => {
+                  setUsernameInput('admin');
+                  setPasswordInput('admin123');
+                }}
+              >
+                Auto-Fill Admin Credentials
+              </button>
             </div>
 
             {authError && (
@@ -1005,7 +1071,7 @@ export default function AdminPortal({ onClose }) {
             )}
 
             <form onSubmit={handleLogin} className="admin-login-form">
-              <div className="form-group">
+              <div className="admin-input-group">
                 <label>Admin Username or Email</label>
                 <input
                   type="text"
@@ -1017,7 +1083,7 @@ export default function AdminPortal({ onClose }) {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="admin-input-group">
                 <label>Admin Password</label>
                 <input
                   type="password"
@@ -1028,20 +1094,15 @@ export default function AdminPortal({ onClose }) {
                 />
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }}>
+              <button
+                type="submit"
+                className="btn-primary"
+                style={{ width: '100%', marginTop: '14px', justifyContent: 'center' }}
+              >
                 <Lock size={16} />
-                <span>Authenticate Admin</span>
+                <span>Authenticate &amp; Open Admin</span>
               </button>
-
-              <div className="admin-demo-creds">
-                <span className="demo-label">Default Admin Access:</span>
-                <code>Username: admin &bull; Password: admin123</code>
-              </div>
             </form>
-
-            <button type="button" onClick={onClose} className="admin-login-close-btn" title="Close Admin Modal">
-              <X size={20} />
-            </button>
           </div>
         </div>
       </div>
@@ -1169,6 +1230,20 @@ export default function AdminPortal({ onClose }) {
                   <span>Create New Project</span>
                 </button>
 
+                {isLocalEnvironment && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handleSaveDirectlyToCode}
+                    disabled={isSavingToCode}
+                    title="Save all local custom data directly into src/data/interiorProjectsData.json"
+                    style={{ background: '#C9A474', color: '#12100E', fontWeight: 'bold' }}
+                  >
+                    <Sparkles size={14} />
+                    <span>{isSavingToCode ? 'Saving to Code...' : 'Save Directly to Code'}</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   className="btn-outline"
@@ -1223,6 +1298,29 @@ export default function AdminPortal({ onClose }) {
 
                 <div className="drawer-body" style={{ padding: '24px' }}>
                   <div className="export-options-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                    {/* Direct Localhost Sync */}
+                    {isLocalEnvironment && (
+                      <div style={{ background: '#262017', border: '1px solid #C9A474', borderRadius: 'var(--radius-sm)', padding: '18px', gridColumn: '1 / -1' }}>
+                        <h4 style={{ color: '#FFFFFF', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                          <Sparkles size={18} color="#C9A474" />
+                          <span>⚡ Direct Localhost Sync: Save to <code>interiorProjectsData.json</code></span>
+                        </h4>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', lineHeight: '1.5', marginBottom: '14px' }}>
+                          Running on localhost? Click this button to instantly write all current custom projects and categories directly into your project's codebase file (<code>src/data/interiorProjectsData.json</code>). Then run <code>git push</code> or <code>npm run publish:projects</code> to deploy to the live site for all devices!
+                        </p>
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          onClick={handleSaveDirectlyToCode}
+                          disabled={isSavingToCode}
+                          style={{ padding: '10px 20px', fontWeight: 'bold' }}
+                        >
+                          <Sparkles size={14} />
+                          <span>{isSavingToCode ? 'Writing to Codebase...' : '💾 Save All Projects Directly to Code File'}</span>
+                        </button>
+                      </div>
+                    )}
+
                     {/* Option 1: Download JSON */}
                     <div style={{ background: '#201D1A', border: '1px solid rgba(201, 164, 116, 0.3)', borderRadius: 'var(--radius-sm)', padding: '18px' }}>
                       <h4 style={{ color: '#FFFFFF', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem' }}>
