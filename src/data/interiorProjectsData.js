@@ -922,35 +922,80 @@ export function loadSampleShowcaseProjects() {
 }
 
 /**
- * Retrieve single project by ID
+ * Retrieve single project by ID, slug, or index
  */
 export function getInteriorProjectById(projectId) {
   if (!projectId) return null;
   const list = getAllInteriorProjects();
+  if (!list || list.length === 0) return null;
   const cleanId = String(projectId).trim().toLowerCase();
-  return (
-    list.find(
-      (p) =>
-        String(p.id).trim().toLowerCase() === cleanId ||
-        String(p.title).trim().toLowerCase() === cleanId
-    ) || null
+
+  // 1. Direct ID or Title match
+  let found = list.find(
+    (p) =>
+      String(p.id).trim().toLowerCase() === cleanId ||
+      String(p.title).trim().toLowerCase() === cleanId
   );
+  if (found) return found;
+
+  // 2. Slug match (e.g. "the-grand-pavilion")
+  found = list.find((p) => {
+    const slug = String(p.title || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    return slug === cleanId;
+  });
+  if (found) return found;
+
+  // 3. Fallback for "project1", "project-1", "1", etc.
+  const matchIndex = cleanId.match(/^(?:project[-_]?)?([0-9]+)$/);
+  if (matchIndex) {
+    const idx = parseInt(matchIndex[1], 10) - 1;
+    if (idx >= 0 && idx < list.length) {
+      return list[idx];
+    }
+  }
+
+  return null;
 }
 
 /**
- * Retrieve category by project ID and category ID
+ * Retrieve category by project ID and category ID, slug, or index
  */
 export function getCategoryByProjectAndId(projectId, categoryId) {
   const project = getInteriorProjectById(projectId);
-  if (!project || !project.categories) return null;
+  if (!project || !project.categories || project.categories.length === 0) return null;
   const cleanCatId = String(categoryId).trim().toLowerCase();
-  return (
-    project.categories.find(
-      (c) =>
-        String(c.id).trim().toLowerCase() === cleanCatId ||
-        String(c.name).trim().toLowerCase() === cleanCatId
-    ) || null
+
+  // 1. Direct ID or Name match
+  let found = project.categories.find(
+    (c) =>
+      String(c.id).trim().toLowerCase() === cleanCatId ||
+      String(c.name).trim().toLowerCase() === cleanCatId
   );
+  if (found) return found;
+
+  // 2. Slug match (e.g. "kitchen", "living-room")
+  found = project.categories.find((c) => {
+    const slug = String(c.name || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    return slug === cleanCatId;
+  });
+  if (found) return found;
+
+  // 3. Category number fallback (e.g. "category1", "cat-1", "1")
+  const matchIndex = cleanCatId.match(/^(?:category[-_]?|cat[-_]?)?([0-9]+)$/);
+  if (matchIndex) {
+    const idx = parseInt(matchIndex[1], 10) - 1;
+    if (idx >= 0 && idx < project.categories.length) {
+      return project.categories[idx];
+    }
+  }
+
+  return null;
 }
 
 /**

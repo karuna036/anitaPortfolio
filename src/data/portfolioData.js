@@ -884,7 +884,7 @@ export const theSapphireResidenceProject = {
   }
 };
 
-export const portfolioProjects = [];
+export const portfolioProjects = [roomProjects.Kitchen];
 
 export const softwareSkills = [
   {

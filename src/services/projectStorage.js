@@ -77,19 +77,24 @@ export function getAdminSession() {
 }
 
 /**
- * Retrieve all projects from localStorage (default is empty [])
+ * Retrieve all projects from localStorage (falls back to default portfolio projects)
  */
 export function getStoredProjects() {
   try {
     const stored = localStorage.getItem(STORAGE_PROJECTS_KEY);
     if (stored !== null) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
     }
   } catch (err) {
     console.warn('Failed to parse stored projects:', err);
+  }
+
+  // Fallback to default portfolio projects so all visitors see the projects
+  if (Array.isArray(defaultPortfolioProjects) && defaultPortfolioProjects.length > 0) {
+    return defaultPortfolioProjects;
   }
 
   return [];

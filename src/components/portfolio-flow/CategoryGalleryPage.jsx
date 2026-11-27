@@ -39,6 +39,31 @@ export default function CategoryGalleryPage() {
     return getCategoryByProjectAndId(projectId, categoryId);
   }, [projectId, categoryId, version]);
 
+  const allImages = category?.images || [];
+
+  // Categorized image counts
+  const count3D = allImages.filter((img) => img.type === '3D').length;
+  const count2D = allImages.filter((img) => img.type === '2D').length;
+  const countLayout = allImages.filter((img) => img.subType?.includes('Layout')).length;
+  const countBA = allImages.filter((img) => img.subType?.includes('Before')).length;
+
+  // Filtered images list based on activeFilter (hooks must always be called before any early returns)
+  const filteredImages = useMemo(() => {
+    if (activeFilter === '3D') {
+      return allImages.filter((img) => img.type === '3D');
+    }
+    if (activeFilter === '2D') {
+      return allImages.filter((img) => img.type === '2D');
+    }
+    if (activeFilter === 'LAYOUT') {
+      return allImages.filter((img) => img.subType?.includes('Layout') || img.type === '2D');
+    }
+    if (activeFilter === 'BEFORE_AFTER') {
+      return allImages.filter((img) => img.subType?.includes('Before'));
+    }
+    return allImages;
+  }, [allImages, activeFilter]);
+
   if (!project || !category) {
     return (
       <div className="portfolio-flow-page">
@@ -59,31 +84,6 @@ export default function CategoryGalleryPage() {
       </div>
     );
   }
-
-  const allImages = category.images || [];
-
-  // Categorized image counts
-  const count3D = allImages.filter((img) => img.type === '3D').length;
-  const count2D = allImages.filter((img) => img.type === '2D').length;
-  const countLayout = allImages.filter((img) => img.subType?.includes('Layout')).length;
-  const countBA = allImages.filter((img) => img.subType?.includes('Before')).length;
-
-  // Filtered images list based on activeFilter
-  const filteredImages = useMemo(() => {
-    if (activeFilter === '3D') {
-      return allImages.filter((img) => img.type === '3D');
-    }
-    if (activeFilter === '2D') {
-      return allImages.filter((img) => img.type === '2D');
-    }
-    if (activeFilter === 'LAYOUT') {
-      return allImages.filter((img) => img.subType?.includes('Layout') || img.type === '2D');
-    }
-    if (activeFilter === 'BEFORE_AFTER') {
-      return allImages.filter((img) => img.subType?.includes('Before'));
-    }
-    return allImages;
-  }, [allImages, activeFilter]);
 
   return (
     <div className="portfolio-flow-page">
